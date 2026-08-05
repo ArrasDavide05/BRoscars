@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3000/groups/g_crew/rounds/r_revealed)",
+      "Bash(curl -s http://localhost:3000/groups/g_crew/rounds/r_closed)",
+      "Bash([ -f \"$f\" ])"
+    ]
+  }
+}
