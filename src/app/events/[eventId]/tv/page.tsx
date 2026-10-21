@@ -7,6 +7,7 @@ import { Avatar } from "@/components/Avatar";
 import { TimerRing } from "@/components/TimerRing";
 import { RoundStandings } from "@/components/RoundStandings";
 import { BroscarPanel } from "@/components/BroscarPanel";
+import { SuperlativesPanel } from "@/components/SuperlativesPanel";
 import { useTick } from "@/components/useTick";
 
 export default function TvPage({ params }: { params: { eventId: string } }) {
@@ -45,6 +46,7 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
       <div className="stack" style={{ gap: 20, paddingTop: 24 }}>
         <TvHeader groupName={group?.name} event={event} label="Final result" />
         <BroscarPanel eventId={event.id} />
+        <SuperlativesPanel eventId={event.id} />
         <Link href={`/events/${event.id}`} className="btn btn-ghost btn-sm">← Event page</Link>
       </div>
     );
@@ -114,6 +116,7 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
       {live.phase === "broscar" && (
         <div className="stack" style={{ gap: 16 }}>
           <BroscarPanel eventId={event.id} />
+          <SuperlativesPanel eventId={event.id} />
           <div className="row" style={{ justifyContent: "center" }}>
             <button className="btn btn-gold btn-lg" onClick={() => data.advance()}>
               Finish &amp; save to history
