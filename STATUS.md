@@ -79,9 +79,7 @@ upload/storage, and the async read conversion (issue A — that conversion *is* 
 
 - **`next build` was never run last session** — WORKLOG §5 admits this; only `tsc --noEmit`
   was used. It turns out the build **does not pass** (see §4)
-- **7 zero-byte junk files in the project root** — `s.id`, `r.id`, `r.id)`, `r.submissionId`,
-  `s.roundId`, `1`, `finalize`. These are accidental shell-redirect artifacts from last
-  session, not code. Safe to delete
+- ~~**7 zero-byte junk files in the project root**~~ — ✅ done 2026-10-21: all 7 (`s.id`, `r.id`, `r.id)`, `r.submissionId`, `s.roundId`, `1`, `finalize`) verified 0 bytes and deleted
 - **3 extraneous npm packages installed but not in `package.json`** — `vite-tsconfig-paths`,
   `tsconfck`, `globrex`. Leftovers from the abandoned Vitest plugin approach
 - **50 tests landed vs the tester's ~51 plan** — `getVideoRatingState` lives inside the React
@@ -99,7 +97,7 @@ upload/storage, and the async read conversion (issue A — that conversion *is* 
 | **Typecheck** (`npx tsc --noEmit`) | ✅ exit 0 |
 | **Tests** (`npm test`) | ✅ **8 files, 50 tests, all passing** in 3.03s |
 | **Dev server** (`npm run dev`) | ✅ **Comes up clean** — ready in 2.4s on `http://localhost:3000`. All 8 routes compile and return 200 |
-| **Build** (`npm run build`) | ❌ **FAILS** — see below |
+| **Build** (`npm run build`) | ❌ **FAILS** on the exFAT `E:` drive — see below. ✅ **2026-10-21: passes on Linux** (swarm worktree), confirming the failure is environment-specific |
 
 ### Routes verified live (all 200)
 

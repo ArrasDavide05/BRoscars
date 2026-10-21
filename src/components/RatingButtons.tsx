@@ -20,13 +20,15 @@ export function RatingButtons({
   const locked = myRating !== undefined;
 
   return (
-    <div className="rate-row">
+    <div className="rate-row" role="group" aria-label="Rate this video">
       {opts.map((o) => {
         const active = myRating === o.v;
         return (
           <button
             key={o.v}
             className={`rate-btn ${o.cls}${active ? " active" : ""}`}
+            aria-pressed={active}
+            aria-label={o.label}
             disabled={disabled || locked}
             onClick={() => onRate(o.v)}
           >
