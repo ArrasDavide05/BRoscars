@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useData, ROUND_SECONDS } from "@/lib/data";
 import { Avatar } from "@/components/Avatar";
 import { TimerRing } from "@/components/TimerRing";
-import { RoundStandings } from "@/components/RoundStandings";
+import { RoundReveal } from "@/components/RoundReveal";
 import { BroscarPanel } from "@/components/BroscarPanel";
 import { SuperlativesPanel } from "@/components/SuperlativesPanel";
 import { useTick } from "@/components/useTick";
@@ -16,6 +16,8 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
   const event = data.getEvent(params.eventId);
   const live = data.live;
   const advanceRef = useRef("");
+  // Round whose top-3 reveal has reached the winner (UI-only; gates "Next round").
+  const [revealedRoundId, setRevealedRoundId] = useState<string | null>(null);
 
   const isThisLive = Boolean(event && event.status === "live" && live.eventId === event.id);
 
@@ -104,12 +106,18 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
             <span className="eyebrow">Round {roundNo} results</span>
             <h2 style={{ fontSize: 28 }}>{prompt?.text}</h2>
           </div>
-          <RoundStandings roundId={round.id} />
-          <div className="row" style={{ justifyContent: "center" }}>
-            <button className="btn btn-gold btn-lg" onClick={() => data.advance()}>
-              {roundNo < rounds.length ? "Next round ▶" : "Reveal the BRoscar 🏆"}
-            </button>
-          </div>
+          <RoundReveal
+            key={round.id}
+            roundId={round.id}
+            onDone={() => setRevealedRoundId(round.id)}
+          />
+          {revealedRoundId === round.id && (
+            <div className="row" style={{ justifyContent: "center" }}>
+              <button className="btn btn-gold btn-lg" onClick={() => data.advance()}>
+                {roundNo < rounds.length ? "Next round ▶" : "Reveal the BRoscar 🏆"}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
