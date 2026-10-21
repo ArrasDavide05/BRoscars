@@ -23,6 +23,7 @@ import {
   upvotesByUserFrom,
   type RoundStanding,
 } from "@/lib/domain/standings";
+import { computeSuperlatives, type Superlative } from "@/lib/domain/superlatives";
 import {
   subscribe,
   getSnapshot,
@@ -45,7 +46,7 @@ import type {
   User,
 } from "./types";
 
-export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue };
+export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue, Superlative };
 export { ROUND_SECONDS };
 
 export interface VideoRatingState {
@@ -88,6 +89,7 @@ export interface DataApi {
   getRoundWinnerUserIds: (roundId: string) => string[];
   getMyRating: (submissionId: string, userId: string) => RatingValue | undefined;
   getBroscarUserIds: (eventId: string) => string[];
+  getEventSuperlatives: (eventId: string) => Superlative[];
 
   // live
   live: LiveState;
@@ -193,6 +195,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const eventSubs = db.submissions.filter((s) => rounds.some((r) => r.id === s.roundId));
         const eventRatings = db.ratings.filter((rt) => rounds.some((r) => r.id === rt.roundId));
         return computeBroscar(roundWinners, upvotesByUserFrom(eventSubs, eventRatings)).championUserIds;
+      },
+      getEventSuperlatives: (eventId) => {
+        const ev = db.events.find((e) => e.id === eventId);
+        if (!ev) return [];
+        const rounds = ev.roundIds.map((rid) => ({ roundId: rid, submissions: subsForRound(rid) }));
+        const eventRatings = db.ratings.filter((rt) => ev.roundIds.includes(rt.roundId));
+        return computeSuperlatives(rounds, eventRatings);
       },
 
       live,

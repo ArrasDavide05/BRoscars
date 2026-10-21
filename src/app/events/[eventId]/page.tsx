@@ -7,6 +7,7 @@ import { Avatar } from "@/components/Avatar";
 import { SubmitRow } from "@/components/SubmitRow";
 import { RoundStandings } from "@/components/RoundStandings";
 import { BroscarPanel } from "@/components/BroscarPanel";
+import { SuperlativesPanel } from "@/components/SuperlativesPanel";
 
 export default function EventPage({ params }: { params: { eventId: string } }) {
   const data = useData();
@@ -98,6 +99,7 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
       {event.status === "complete" && (
         <div className="stack" style={{ gap: 22 }}>
           <BroscarPanel eventId={event.id} />
+          <SuperlativesPanel eventId={event.id} />
           <div className="stack" style={{ gap: 16 }}>
             <div className="section-title">Round by round</div>
             {rounds.map((r, i) => {
