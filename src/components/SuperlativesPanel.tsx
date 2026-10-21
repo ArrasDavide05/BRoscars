@@ -27,21 +27,24 @@ export function SuperlativesPanel({ eventId }: { eventId: string }) {
       {awards.map((a) => {
         const users = a.userIds.map((id) => data.getUser(id)).filter((u): u is User => Boolean(u));
         const names = users.map((u) => u.name).join(" & ");
-        const caption = a.submissionId
-          ? data.getSubmissions(a.roundId ?? "").find((s) => s.id === a.submissionId)?.caption
-          : undefined;
-        const prompt = a.roundId ? data.getPromptForRound(a.roundId)?.text : undefined;
-
         let line: string | undefined;
         let score: string;
-        if (a.kind === "peoples-champion") {
-          score = `${a.detail.up} upvote${a.detail.up === 1 ? "" : "s"}`;
-        } else if (a.kind === "most-divisive") {
-          line = caption ? `“${caption}”` : undefined;
-          score = `${a.detail.up}▲ ${a.detail.down}▼`;
-        } else {
-          line = prompt ? `lost “${prompt}”` : undefined;
-          score = `by ${a.detail.gap}`;
+        switch (a.kind) {
+          case "peoples-champion":
+            score = `${a.detail.up} upvote${a.detail.up === 1 ? "" : "s"}`;
+            break;
+          case "most-divisive": {
+            const caption = data.getSubmission(a.submissionId)?.caption;
+            line = caption ? `“${caption}”` : undefined;
+            score = `${a.detail.up}▲ ${a.detail.down}▼`;
+            break;
+          }
+          case "robbed": {
+            const prompt = data.getPromptForRound(a.roundId)?.text;
+            line = prompt ? `lost “${prompt}”` : undefined;
+            score = `by ${a.detail.gap}`;
+            break;
+          }
         }
 
         return (

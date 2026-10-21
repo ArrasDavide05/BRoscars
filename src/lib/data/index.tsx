@@ -31,6 +31,7 @@ import {
   actions,
   playOrder,
   eligibleRaterIds,
+  findSubmission,
   ROUND_SECONDS,
 } from "./store";
 import type {
@@ -84,6 +85,7 @@ export interface DataApi {
 
   // submissions / ratings
   getSubmissions: (roundId: string) => Submission[];
+  getSubmission: (submissionId: string) => Submission | undefined;
   getSubmissionByUser: (roundId: string, userId: string) => Submission | undefined;
   getRoundStandings: (roundId: string) => RoundStanding[];
   getRoundWinnerUserIds: (roundId: string) => string[];
@@ -176,6 +178,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       },
 
       getSubmissions: (roundId) => subsForRound(roundId).sort((a, b) => a.createdAt - b.createdAt),
+      getSubmission: (submissionId) => findSubmission(db, submissionId),
       getSubmissionByUser: (roundId, userId) =>
         db.submissions.find((s) => s.roundId === roundId && s.userId === userId),
       getRoundStandings: (roundId) => computeRoundStandings(subsForRound(roundId), ratingsForRound(roundId)),

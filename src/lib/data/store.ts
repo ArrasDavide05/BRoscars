@@ -110,6 +110,10 @@ function roundSubmissions(db: Database, roundId: string): Submission[] {
   return db.submissions.filter((s) => s.roundId === roundId);
 }
 
+function findSubmission(db: Database, submissionId: string): Submission | undefined {
+  return db.submissions.find((s) => s.id === submissionId);
+}
+
 /** Shared TV play order for a round (same on every tab). */
 export function playOrder(db: Database, roundId: string): Submission[] {
   return seededShuffle(roundSubmissions(db, roundId), roundPlaySeed(roundId));
@@ -307,4 +311,4 @@ export const actions = {
   },
 };
 
-export { ROUND_SECONDS, eligibleRaterIds, roundSubmissions };
+export { ROUND_SECONDS, eligibleRaterIds, roundSubmissions, findSubmission };

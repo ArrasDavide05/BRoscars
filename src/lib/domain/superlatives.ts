@@ -7,16 +7,24 @@
 import type { RatingLike } from "./scoring";
 import { computeRoundStandings, upvotesByUserFrom, type SubmissionLike } from "./standings";
 
-export type SuperlativeKind = "peoples-champion" | "most-divisive" | "robbed";
+export type Superlative =
+  | { kind: "peoples-champion"; userIds: string[]; detail: { up: number } }
+  | {
+      kind: "most-divisive";
+      userIds: string[];
+      submissionId: string;
+      roundId: string;
+      detail: { up: number; down: number; net: number };
+    }
+  | {
+      kind: "robbed";
+      userIds: string[];
+      submissionId: string;
+      roundId: string;
+      detail: { up: number; down: number; net: number; gap: number };
+    };
 
-export interface Superlative {
-  kind: SuperlativeKind;
-  userIds: string[];
-  submissionId?: string;
-  roundId?: string;
-  /** numbers only, e.g. { up, down, net, gap } */
-  detail: Record<string, number>;
-}
+export type SuperlativeKind = Superlative["kind"];
 
 export interface SuperlativeRound {
   roundId: string;
