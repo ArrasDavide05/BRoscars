@@ -20,7 +20,7 @@ export function RoundStandings({ roundId, limit = 3 }: { roundId: string; limit?
     <div className="stack" style={{ gap: 10 }}>
       {standings.map((s, i) => {
         const u = data.getUser(s.userId)!;
-        const sub = data.getSubmissions(roundId).find((x) => x.id === s.submissionId) ?? null;
+        const sub = data.getSubmission(s.submissionId) ?? null;
         return (
           <button
             key={s.submissionId}

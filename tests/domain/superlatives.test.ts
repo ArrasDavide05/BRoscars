@@ -117,4 +117,29 @@ describe("computeSuperlatives", () => {
     );
     expect(allTied.some((s) => s.kind === "robbed")).toBe(false);
   });
+
+  it("detail is typed per kind (narrowing on kind exposes down / gap)", () => {
+    const rounds = [{ roundId: "r1", submissions: [sub("a1", "ann"), sub("b1", "ben")] }];
+    const out = computeSuperlatives(rounds, [...r("a1", 1, 1, 1), ...r("b1", 1, 1, -1)]);
+    const seen: string[] = [];
+    for (const s of out) {
+      switch (s.kind) {
+        case "peoples-champion":
+          expect(s.detail).toEqual({ up: 3 });
+          seen.push(`${s.kind}:${s.detail.up}`);
+          break;
+        case "most-divisive":
+          expect(s.submissionId).toBe("b1");
+          expect(s.detail).toEqual({ up: 2, down: 1, net: 1 });
+          seen.push(`${s.kind}:${s.detail.down}`);
+          break;
+        case "robbed":
+          expect(s.roundId).toBe("r1");
+          expect(s.detail).toEqual({ up: 2, down: 1, net: 1, gap: 2 });
+          seen.push(`${s.kind}:${s.detail.gap}`);
+          break;
+      }
+    }
+    expect(seen).toEqual(["peoples-champion:3", "most-divisive:1", "robbed:2"]);
+  });
 });
