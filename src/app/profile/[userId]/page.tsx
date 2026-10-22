@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useData } from "@/lib/data";
 import { Avatar } from "@/components/Avatar";
+import { TrophyCabinet } from "@/components/TrophyCabinet";
 
 const PALETTE = ["#E4B04A", "#6C8AE4", "#5FB98E", "#D06BA3", "#C96F5A", "#8E7CC3", "#4FB6C7", "#E0854A"];
 
@@ -41,6 +42,8 @@ export default function ProfilePage({ params }: { params: { userId: string } }) 
         <StatCard icon="🏆" label="BRoscars" value={stats.broscars} hint="event wins" />
         <StatCard icon="▲" label="Upvotes" value={stats.upvotes} hint="lifetime" />
       </div>
+
+      <TrophyCabinet userId={user.id} />
 
       {/* editor */}
       {isMe ? (
