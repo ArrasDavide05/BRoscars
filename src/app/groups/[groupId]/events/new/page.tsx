@@ -4,10 +4,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useData } from "@/lib/data";
+import {
+  EVENT_TITLE_MAX_LENGTH,
+  deadlineFromDateInput,
+  toDateInputValue,
+  validateEventDraft,
+} from "@/lib/domain/event-draft";
 
 function defaultDeadline(): string {
-  const d = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
-  return d.toISOString().slice(0, 10);
+  return toDateInputValue(Date.now() + 5 * 24 * 60 * 60 * 1000);
 }
 
 export default function NewEventPage({ params }: { params: { groupId: string } }) {
@@ -39,13 +44,23 @@ export default function NewEventPage({ params }: { params: { groupId: string } }
     });
   };
 
+  const deadlineMs = deadlineFromDateInput(deadline);
+  const draft = validateEventDraft({
+    title,
+    promptCount: promptIds.length,
+    deadline: deadlineMs,
+    now: Date.now(),
+  });
+  const reason = draft.errors[0] ?? draft.warnings[0];
+
   const create = async () => {
+    if (!draft.ok) return;
     const id = await data.createEvent(
       group.id,
       data.currentUserId,
-      title,
+      title.trim(),
       promptIds,
-      new Date(deadline).getTime()
+      deadlineMs
     );
     router.push(`/events/${id}`);
   };
@@ -66,7 +81,12 @@ export default function NewEventPage({ params }: { params: { groupId: string } }
         <div className="row wrap" style={{ gap: 12, flex: 1 }}>
           <label className="stack" style={{ gap: 4, flex: 1, minWidth: 200 }}>
             <span className="faint" style={{ fontSize: 12 }}>Event name</span>
-            <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <input
+              className="input"
+              value={title}
+              maxLength={EVENT_TITLE_MAX_LENGTH}
+              onChange={(e) => setTitle(e.target.value)}
+            />
           </label>
           <label className="stack" style={{ gap: 4 }}>
             <span className="faint" style={{ fontSize: 12 }}>Submission deadline</span>
@@ -74,10 +94,22 @@ export default function NewEventPage({ params }: { params: { groupId: string } }
           </label>
         </div>
         <div className="stack" style={{ gap: 6, alignItems: "flex-end" }}>
-          <span className={`badge ${promptIds.length ? "revealed" : ""}`}>{promptIds.length} rounds selected</span>
-          <button className="btn btn-gold btn-lg" disabled={promptIds.length === 0} onClick={create}>
+          <div className="row" style={{ gap: 8 }}>
+            {promptIds.length > 0 && (
+              <button className="btn btn-sm btn-ghost" onClick={() => setPicks({})}>
+                Clear picks
+              </button>
+            )}
+            <span className={`badge ${promptIds.length ? "revealed" : ""}`}>{promptIds.length} rounds selected</span>
+          </div>
+          <button className="btn btn-gold btn-lg" disabled={!draft.ok} onClick={create}>
             Create event →
           </button>
+          {reason && (
+            <span className="note" role="status">
+              {draft.ok ? reason : `Can't create yet: ${reason}`}
+            </span>
+          )}
         </div>
       </div>
 
@@ -96,6 +128,7 @@ export default function NewEventPage({ params }: { params: { groupId: string } }
                   <button
                     key={pid}
                     className={`btn btn-sm${active ? " btn-gold" : " btn-ghost"}`}
+                    aria-pressed={active}
                     onClick={() => toggle(t.id, pid)}
                   >
                     {prompt?.text}
