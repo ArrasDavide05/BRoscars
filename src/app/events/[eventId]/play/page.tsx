@@ -7,6 +7,7 @@ import { Avatar } from "@/components/Avatar";
 import { TimerRing } from "@/components/TimerRing";
 import { RatingButtons } from "@/components/RatingButtons";
 import { useTick } from "@/components/useTick";
+import { waitingOnNames } from "@/lib/domain/rater-progress";
 
 export default function PlayPage({ params }: { params: { eventId: string } }) {
   const data = useData();
@@ -84,14 +85,27 @@ export default function PlayPage({ params }: { params: { eventId: string } }) {
             myRating={myRating}
             onRate={(v) => data.castRating(round.id, sub.id, me.id, v)}
           />
-          {myRating !== undefined && (
-            <div className="note" style={{ textAlign: "center" }}>
-              ✓ Rated. Waiting for the next video…
-            </div>
-          )}
+          {myRating !== undefined && <LockedInNote submissionId={sub.id} />}
         </>
       )}
     </PhoneFrame>
+  );
+}
+
+/** "Locked in" note after rating: who we're still waiting on (never their values). */
+function LockedInNote({ submissionId }: { submissionId: string }) {
+  const data = useData();
+  const rs = data.getVideoRatingState(submissionId);
+  const names: Record<string, string> = {};
+  for (const id of rs.eligible) {
+    const u = data.getUser(id);
+    if (u) names[id] = u.name;
+  }
+  const waiting = waitingOnNames(rs.eligible, rs.ratedBy, names);
+  return (
+    <div className="note lock-in-note" role="status" style={{ textAlign: "center" }}>
+      ✓ Locked in. {waiting ? `Waiting on ${waiting}…` : "Everyone's in!"}
+    </div>
   );
 }
 

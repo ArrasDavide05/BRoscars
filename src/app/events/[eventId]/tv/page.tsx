@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useData, ROUND_SECONDS } from "@/lib/data";
 import { Avatar } from "@/components/Avatar";
 import { TimerRing } from "@/components/TimerRing";
+import { RaterStrip } from "@/components/RaterStrip";
 import { RoundReveal } from "@/components/RoundReveal";
 import { BroscarPanel } from "@/components/BroscarPanel";
 import { SuperlativesPanel } from "@/components/SuperlativesPanel";
@@ -195,6 +196,7 @@ function PlayingStage({ roundId, mounted }: { roundId: string; mounted: boolean 
       <div className="subcard-caption" style={{ fontSize: 16 }}>&ldquo;{sub.caption}&rdquo;</div>
 
       <TimerRing remaining={remaining} total={ROUND_SECONDS} />
+      <RaterStrip eligible={rs.eligible} ratedBy={rs.ratedBy} />
       <div className="muted">{rs.ratedBy.length} / {rs.eligible.length} players rated</div>
 
       <div className="row" style={{ gap: 10 }}>
