@@ -2,25 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useData, type Submission } from "@/lib/data";
+import { groupRevealSteps } from "@/lib/domain/reveal-steps";
 import { Avatar } from "./Avatar";
 import { VideoModal } from "./VideoModal";
 
 const MEDAL = ["🥇", "🥈", "🥉"];
 const PLACE = ["1st", "2nd", "3rd"];
 const STEP_MS = 2000;
-
-/**
- * Group ranked rows into reveal steps: rows sharing a (competition) rank share
- * a step; steps are ordered from the lowest place up to 1st.
- * Pure — could move to `src/lib/domain/` later.
- */
-export function groupRevealSteps<T extends { rank: number }>(rows: readonly T[]): T[][] {
-  const byRank = new Map<number, T[]>();
-  for (const r of rows) byRank.set(r.rank, [...(byRank.get(r.rank) ?? []), r]);
-  return Array.from(byRank.entries())
-    .sort((a, b) => b[0] - a[0])
-    .map(([, group]) => group);
-}
 
 /**
  * TV round results as a suspense reveal: 3rd → 2nd → 1st (ties together),
@@ -82,7 +70,7 @@ export function RoundReveal({ roundId, onDone }: { roundId: string; onDone?: () 
           );
         }
         const u = data.getUser(s.userId)!;
-        const sub = data.getSubmissions(roundId).find((x) => x.id === s.submissionId) ?? null;
+        const sub = data.getSubmission(s.submissionId) ?? null;
         return (
           <button
             key={s.submissionId}
