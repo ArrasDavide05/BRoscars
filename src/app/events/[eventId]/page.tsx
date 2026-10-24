@@ -8,6 +8,8 @@ import { SubmitRow } from "@/components/SubmitRow";
 import { RoundStandings } from "@/components/RoundStandings";
 import { BroscarPanel } from "@/components/BroscarPanel";
 import { SuperlativesPanel } from "@/components/SuperlativesPanel";
+import { SubmissionProgress } from "@/components/SubmissionProgress";
+import { missingCount } from "@/lib/domain/submission-progress";
 
 export default function EventPage({ params }: { params: { eventId: string } }) {
   const data = useData();
@@ -29,6 +31,7 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
   const members = data.getMembers(event.groupId);
 
   const mySubmitted = rounds.filter((r) => data.getSubmissionByUser(r.id, data.currentUserId)).length;
+  const missing = missingCount(data.getSubmissionProgress(event.id));
 
   return (
     <div className="stack" style={{ gap: 24, paddingTop: 24 }}>
@@ -72,6 +75,9 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
             </div>
             <div className="row" style={{ gap: 10 }}>
               <span className="note">Deadline {new Date(event.deadline).toLocaleDateString()}</span>
+              <span className="muted" style={{ fontSize: 13, color: missing === 0 ? "var(--gold)" : undefined }}>
+                {missing === 0 ? "Everyone's in ✓" : `${missing} member${missing === 1 ? "" : "s"} still missing clips`}
+              </span>
               <button
                 className="btn btn-gold"
                 disabled={!isHost}
@@ -85,6 +91,8 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
               </button>
             </div>
           </div>
+
+          <SubmissionProgress eventId={event.id} />
 
           <div className="stack">
             <div className="section-title">Rounds</div>
