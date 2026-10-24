@@ -24,6 +24,7 @@ import {
   type RoundStanding,
 } from "@/lib/domain/standings";
 import { computeSuperlatives, type Superlative } from "@/lib/domain/superlatives";
+import { submissionProgress, type MemberSubmissionProgress } from "@/lib/domain/submission-progress";
 import {
   subscribe,
   getSnapshot,
@@ -47,7 +48,7 @@ import type {
   User,
 } from "./types";
 
-export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue, Superlative };
+export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress };
 export { ROUND_SECONDS };
 
 export interface VideoRatingState {
@@ -87,6 +88,7 @@ export interface DataApi {
   getSubmissions: (roundId: string) => Submission[];
   getSubmission: (submissionId: string) => Submission | undefined;
   getSubmissionByUser: (roundId: string, userId: string) => Submission | undefined;
+  getSubmissionProgress: (eventId: string) => MemberSubmissionProgress[];
   getRoundStandings: (roundId: string) => RoundStanding[];
   getRoundWinnerUserIds: (roundId: string) => string[];
   getMyRating: (submissionId: string, userId: string) => RatingValue | undefined;
@@ -181,6 +183,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       getSubmission: (submissionId) => findSubmission(db, submissionId),
       getSubmissionByUser: (roundId, userId) =>
         db.submissions.find((s) => s.roundId === roundId && s.userId === userId),
+      // Real build: a count-only view/RPC, so RLS still hides other members' Submission rows.
+      getSubmissionProgress: (eventId) => {
+        const ev = db.events.find((e) => e.id === eventId);
+        if (!ev) return [];
+        const memberIds = db.groups.find((g) => g.id === ev.groupId)?.memberIds ?? [];
+        return submissionProgress(memberIds, ev.roundIds, db.submissions);
+      },
       getRoundStandings: (roundId) => computeRoundStandings(subsForRound(roundId), ratingsForRound(roundId)),
       getRoundWinnerUserIds: (roundId) => {
         const r = db.rounds.find((x) => x.id === roundId);
