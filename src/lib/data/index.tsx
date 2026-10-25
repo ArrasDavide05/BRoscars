@@ -25,6 +25,7 @@ import {
 } from "@/lib/domain/standings";
 import { computeSuperlatives, type Superlative } from "@/lib/domain/superlatives";
 import { submissionProgress, type MemberSubmissionProgress } from "@/lib/domain/submission-progress";
+import { computeHallOfFame, type HallOfFameRow } from "@/lib/domain/hall-of-fame";
 import {
   subscribe,
   getSnapshot,
@@ -48,7 +49,7 @@ import type {
   User,
 } from "./types";
 
-export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress };
+export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress, HallOfFameRow };
 export { ROUND_SECONDS };
 
 export interface VideoRatingState {
@@ -75,6 +76,7 @@ export interface DataApi {
   getUser: (id: string) => User | undefined;
   getMembers: (groupId: string) => User[];
   getCareerStats: (userId: string) => CareerBaseline;
+  getGroupHallOfFame: (groupId: string) => HallOfFameRow[];
 
   // events / rounds
   getEvents: (groupId: string) => Event[];
@@ -158,6 +160,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           total.upvotes += upvotesByUserFrom(eventSubs, eventRatings)[userId] ?? 0;
         }
         return total;
+      },
+      // Group-scoped: only this group's finished events, no cross-group careerBaseline.
+      getGroupHallOfFame: (groupId) => {
+        const memberIds = db.groups.find((g) => g.id === groupId)?.memberIds ?? [];
+        const events = db.events
+          .filter((e) => e.groupId === groupId && e.status === "complete")
+          .map((ev) => {
+            const rounds = ev.roundIds.map((rid) => db.rounds.find((r) => r.id === rid)).filter((r): r is Round => Boolean(r));
+            const eventSubs = db.submissions.filter((s) => rounds.some((r) => r.id === s.roundId));
+            const eventRatings = db.ratings.filter((rt) => rounds.some((r) => r.id === rt.roundId));
+            return {
+              roundWinnerUserIds: rounds.map((r) => r.winnerUserIds),
+              broscarUserIds: ev.broscarUserIds,
+              upvotesByUser: upvotesByUserFrom(eventSubs, eventRatings),
+            };
+          });
+        return computeHallOfFame(memberIds, events);
       },
 
       getEvents: (groupId) =>
