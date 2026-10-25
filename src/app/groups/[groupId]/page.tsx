@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useData } from "@/lib/data";
 import { Avatar, AvatarStack } from "@/components/Avatar";
 import { EventCard } from "@/components/EventCard";
+import { HallOfFame } from "@/components/HallOfFame";
 import { formatInviteCode } from "@/lib/domain/invite-code";
 
 export default function GroupHomePage({ params }: { params: { groupId: string } }) {
@@ -96,6 +97,8 @@ export default function GroupHomePage({ params }: { params: { groupId: string } 
           </div>
         )}
       </section>
+
+      <HallOfFame groupId={group.id} />
 
       {/* history */}
       <section className="stack">
