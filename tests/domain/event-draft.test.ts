@@ -92,4 +92,25 @@ describe("deadlineFromDateInput", () => {
   it("round-trips with toDateInputValue", () => {
     expect(toDateInputValue(deadlineFromDateInput("2026-01-05"))).toBe("2026-01-05");
   });
+
+  it("round-trips across a month end (Jan 31 -> Feb 1)", () => {
+    const jan31 = deadlineFromDateInput("2027-01-31");
+    expect(toDateInputValue(jan31)).toBe("2027-01-31");
+    expect(toDateInputValue(jan31 + 1)).toBe("2027-02-01");
+    expect(toDateInputValue(deadlineFromDateInput("2027-02-01"))).toBe("2027-02-01");
+  });
+
+  it("round-trips a leap day and rejects Feb 29 in a non-leap year", () => {
+    const leap = deadlineFromDateInput("2028-02-29");
+    expect(toDateInputValue(leap)).toBe("2028-02-29");
+    expect(toDateInputValue(leap + 1)).toBe("2028-03-01");
+    expect(deadlineFromDateInput("2027-02-29")).toBeNaN();
+  });
+
+  it("round-trips across a year end (Dec 31 -> Jan 1)", () => {
+    const dec31 = deadlineFromDateInput("2026-12-31");
+    expect(toDateInputValue(dec31)).toBe("2026-12-31");
+    expect(toDateInputValue(dec31 + 1)).toBe("2027-01-01");
+    expect(toDateInputValue(deadlineFromDateInput("2027-01-01"))).toBe("2027-01-01");
+  });
 });
