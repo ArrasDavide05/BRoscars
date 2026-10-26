@@ -10,6 +10,7 @@ import {
   toDateInputValue,
   validateEventDraft,
 } from "@/lib/domain/event-draft";
+import { surprisePicks } from "@/lib/domain/surprise-picks";
 
 function defaultDeadline(): string {
   return toDateInputValue(Date.now() + 5 * 24 * 60 * 60 * 1000);
@@ -95,6 +96,12 @@ export default function NewEventPage({ params }: { params: { groupId: string } }
         </div>
         <div className="stack" style={{ gap: 6, alignItems: "flex-end" }}>
           <div className="row" style={{ gap: 8 }}>
+            <button
+              className="btn btn-sm btn-ghost"
+              onClick={() => setPicks(surprisePicks(themes, String(Date.now())))}
+            >
+              Surprise me 🎲
+            </button>
             {promptIds.length > 0 && (
               <button className="btn btn-sm btn-ghost" onClick={() => setPicks({})}>
                 Clear picks
