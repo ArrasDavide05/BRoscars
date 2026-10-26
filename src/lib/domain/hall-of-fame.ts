@@ -1,3 +1,7 @@
+// Group Hall of Fame: all-time leaderboard of one group's members.
+// Pure: plain input in, ranked rows out. Group-scoped, completed events only,
+// and no careerBaseline (that belongs to career stats, which span all groups).
+
 /** One member's all-time record inside a group. */
 export interface HallOfFameRow {
   userId: string;

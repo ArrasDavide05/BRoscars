@@ -26,6 +26,7 @@ import {
 import { computeSuperlatives, type Superlative } from "@/lib/domain/superlatives";
 import { submissionProgress, type MemberSubmissionProgress } from "@/lib/domain/submission-progress";
 import { computeHallOfFame, type HallOfFameRow } from "@/lib/domain/hall-of-fame";
+import { computeCareerStats } from "@/lib/domain/career-stats";
 import {
   subscribe,
   getSnapshot,
@@ -150,16 +151,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       },
       getCareerStats: (userId) => {
         const base = db.users.find((u) => u.id === userId)?.careerBaseline;
-        const total: CareerBaseline = { crowns: base?.crowns ?? 0, broscars: base?.broscars ?? 0, upvotes: base?.upvotes ?? 0 };
-        for (const ev of db.events.filter((e) => e.status === "complete")) {
-          const rounds = ev.roundIds.map((rid) => db.rounds.find((r) => r.id === rid)).filter((r): r is Round => Boolean(r));
-          for (const r of rounds) if (r.winnerUserIds.includes(userId)) total.crowns += 1;
-          if (ev.broscarUserIds.includes(userId)) total.broscars += 1;
-          const eventSubs = db.submissions.filter((s) => rounds.some((r) => r.id === s.roundId));
-          const eventRatings = db.ratings.filter((rt) => rounds.some((r) => r.id === rt.roundId));
-          total.upvotes += upvotesByUserFrom(eventSubs, eventRatings)[userId] ?? 0;
-        }
-        return total;
+        const events = db.events
+          .filter((e) => e.status === "complete")
+          .map((ev) => {
+            const rounds = ev.roundIds.map((rid) => db.rounds.find((r) => r.id === rid)).filter((r): r is Round => Boolean(r));
+            const eventSubs = db.submissions.filter((s) => rounds.some((r) => r.id === s.roundId));
+            const eventRatings = db.ratings.filter((rt) => rounds.some((r) => r.id === rt.roundId));
+            return {
+              roundWinnerUserIds: rounds.map((r) => r.winnerUserIds),
+              broscarUserIds: ev.broscarUserIds,
+              upvotesByUser: upvotesByUserFrom(eventSubs, eventRatings),
+            };
+          });
+        return computeCareerStats(userId, base, events);
       },
       // Group-scoped: only this group's finished events, no cross-group careerBaseline.
       getGroupHallOfFame: (groupId) => {
