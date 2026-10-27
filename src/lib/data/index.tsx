@@ -27,6 +27,7 @@ import { computeSuperlatives, type Superlative } from "@/lib/domain/superlatives
 import { submissionProgress, type MemberSubmissionProgress } from "@/lib/domain/submission-progress";
 import { computeHallOfFame, type HallOfFameRow } from "@/lib/domain/hall-of-fame";
 import { computeCareerStats } from "@/lib/domain/career-stats";
+import { computeRaceStandings, type RaceRow } from "@/lib/domain/race";
 import {
   subscribe,
   getSnapshot,
@@ -50,7 +51,7 @@ import type {
   User,
 } from "./types";
 
-export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress, HallOfFameRow };
+export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress, HallOfFameRow, RaceRow };
 export { ROUND_SECONDS };
 
 export interface VideoRatingState {
@@ -96,6 +97,8 @@ export interface DataApi {
   getRoundWinnerUserIds: (roundId: string) => string[];
   getMyRating: (submissionId: string, userId: string) => RatingValue | undefined;
   getBroscarUserIds: (eventId: string) => string[];
+  /** Running crowns/upvotes over the event's first `roundsCompleted` rounds. */
+  getRaceStandings: (eventId: string, roundsCompleted: number) => RaceRow[];
   getEventSuperlatives: (eventId: string) => Superlative[];
 
   // live
@@ -230,6 +233,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const eventSubs = db.submissions.filter((s) => rounds.some((r) => r.id === s.roundId));
         const eventRatings = db.ratings.filter((rt) => rounds.some((r) => r.id === rt.roundId));
         return computeBroscar(roundWinners, upvotesByUserFrom(eventSubs, eventRatings)).championUserIds;
+      },
+      getRaceStandings: (eventId, roundsCompleted) => {
+        const ev = db.events.find((e) => e.id === eventId);
+        if (!ev) return [];
+        const memberIds = db.groups.find((g) => g.id === ev.groupId)?.memberIds ?? [];
+        const doneIds = ev.roundIds.slice(0, Math.max(0, roundsCompleted));
+        const roundWinners = doneIds.map((rid) => computeRoundWinnerUserIds(subsForRound(rid), ratingsForRound(rid)));
+        const doneSubs = db.submissions.filter((s) => doneIds.includes(s.roundId));
+        const doneRatings = db.ratings.filter((rt) => doneIds.includes(rt.roundId));
+        return computeRaceStandings(memberIds, roundWinners, upvotesByUserFrom(doneSubs, doneRatings));
       },
       getEventSuperlatives: (eventId) => {
         const ev = db.events.find((e) => e.id === eventId);

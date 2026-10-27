@@ -9,6 +9,7 @@ import { RaterStrip } from "@/components/RaterStrip";
 import { RoundReveal } from "@/components/RoundReveal";
 import { BroscarPanel } from "@/components/BroscarPanel";
 import { SuperlativesPanel } from "@/components/SuperlativesPanel";
+import { RaceScoreboard } from "@/components/RaceScoreboard";
 import { useTick } from "@/components/useTick";
 
 export default function TvPage({ params }: { params: { eventId: string } }) {
@@ -113,11 +114,14 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
             onDone={() => setRevealedRoundId(round.id)}
           />
           {revealedRoundId === round.id && (
-            <div className="row" style={{ justifyContent: "center" }}>
-              <button className="btn btn-gold btn-lg" onClick={() => data.advance()}>
-                {roundNo < rounds.length ? "Next round ▶" : "Reveal the BRoscar 🏆"}
-              </button>
-            </div>
+            <>
+              <RaceScoreboard eventId={event.id} roundsCompleted={roundNo} totalRounds={rounds.length} />
+              <div className="row" style={{ justifyContent: "center" }}>
+                <button className="btn btn-gold btn-lg" onClick={() => data.advance()}>
+                  {roundNo < rounds.length ? "Next round ▶" : "Reveal the BRoscar 🏆"}
+                </button>
+              </div>
+            </>
           )}
         </div>
       )}
