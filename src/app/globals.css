@@ -775,3 +775,62 @@ h3 {
     transition: none;
   }
 }
+
+/* ---------- Race to the BRoscar (TV, between rounds) ---------- */
+.race {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  animation: lock-in-fade 0.3s ease-out;
+}
+.race-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.race-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  border-left: 3px solid transparent;
+}
+.race-rank {
+  width: 22px;
+  text-align: right;
+  font-weight: 800;
+  color: var(--faint);
+}
+.race-name {
+  flex: 1;
+  font-weight: 600;
+}
+.race-crowns {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.race-upvotes {
+  width: 48px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+.race-leader {
+  border-left-color: var(--gold);
+  background: linear-gradient(90deg, rgba(228, 176, 74, 0.12), transparent 70%);
+}
+.race-leader .race-rank,
+.race-leader .race-crowns {
+  color: var(--gold);
+}
+.race-leader .race-name {
+  font-weight: 800;
+  color: var(--gold-soft);
+}
+@media (prefers-reduced-motion: reduce) {
+  .race {
+    animation: none;
+  }
+}
