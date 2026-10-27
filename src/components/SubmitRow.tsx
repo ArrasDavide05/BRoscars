@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useData, type Submission } from "@/lib/data";
 import { Avatar } from "./Avatar";
 import { VideoTile } from "./VideoTile";
@@ -22,12 +22,19 @@ export function SubmitRow({ roundId, index }: { roundId: string; index: number }
   const count = data.getSubmissions(roundId).length;
 
   const [open, setOpen] = useState(false);
+  const panelId = useId();
   const [caption, setCaption] = useState("");
   const [openSub, setOpenSub] = useState<Submission | null>(null);
 
   return (
     <div className="panel pad stack" style={{ gap: 12 }}>
-      <button className="acc-head" onClick={() => setOpen((o) => !o)}>
+      <button
+        type="button"
+        className="acc-head"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((o) => !o)}
+      >
         <span className="row" style={{ gap: 10 }}>
           <span className="faint" style={{ fontSize: 12 }}>#{index + 1}</span>
           <span className="badge" style={{ fontSize: 11 }}>{theme?.name}</span>
@@ -42,16 +49,18 @@ export function SubmitRow({ roundId, index }: { roundId: string; index: number }
       </button>
 
       {open && (
-        <div className="stack" style={{ gap: 12 }}>
+        <div id={panelId} className="stack" style={{ gap: 12 }}>
           <hr className="divider" />
 
           {/* my own submission / submit control (only my clip is watchable) */}
           {mine ? (
             <div className="row" style={{ gap: 12 }}>
               <button
+                type="button"
                 onClick={() => setOpenSub(mine)}
                 style={{ width: 70, background: "none", border: "none", padding: 0, cursor: "pointer" }}
                 title="Watch your clip"
+                aria-label="Watch your clip"
               >
                 <VideoTile submission={mine} />
               </button>
@@ -72,6 +81,7 @@ export function SubmitRow({ roundId, index }: { roundId: string; index: number }
                 maxLength={80}
               />
               <button
+                type="button"
                 className="btn btn-gold"
                 onClick={() => {
                   data.submitVideo(roundId, data.currentUserId, caption);

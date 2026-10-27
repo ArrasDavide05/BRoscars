@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useData } from "@/lib/data";
 import { Avatar, AvatarStack } from "@/components/Avatar";
 import { EventCard } from "@/components/EventCard";
@@ -12,6 +12,7 @@ export default function GroupHomePage({ params }: { params: { groupId: string } 
   const data = useData();
   const group = data.getGroup(params.groupId);
   const [showMembers, setShowMembers] = useState(false);
+  const membersId = useId();
 
   if (!group) {
     return (
@@ -40,7 +41,13 @@ export default function GroupHomePage({ params }: { params: { groupId: string } 
             <span className="faint" style={{ fontSize: 13 }}>
               Invite <span className="pill-code">{formatInviteCode(group.inviteCode)}</span>
             </span>
-            <button className="btn btn-sm" onClick={() => setShowMembers((s) => !s)}>
+            <button
+              type="button"
+              className="btn btn-sm"
+              aria-expanded={showMembers}
+              aria-controls={membersId}
+              onClick={() => setShowMembers((s) => !s)}
+            >
               {showMembers ? "Hide members" : "View group"}
             </button>
           </div>
@@ -52,7 +59,7 @@ export default function GroupHomePage({ params }: { params: { groupId: string } 
         </div>
 
         {showMembers && (
-          <div className="grid grid-2" style={{ marginTop: 6 }}>
+          <div id={membersId} className="grid grid-2" style={{ marginTop: 6 }}>
             {members.map((m) => {
               const stats = data.getCareerStats(m.id);
               return (

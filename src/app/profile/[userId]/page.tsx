@@ -58,6 +58,7 @@ export default function ProfilePage({ params }: { params: { userId: string } }) 
             <div className="row wrap" style={{ gap: 10 }}>
               {PALETTE.map((c) => (
                 <button
+                  type="button"
                   key={c}
                   onClick={() => setColor(c)}
                   aria-label={`Pick ${c}`}
@@ -71,6 +72,7 @@ export default function ProfilePage({ params }: { params: { userId: string } }) 
           </div>
           <div className="row">
             <button
+              type="button"
               className="btn btn-gold"
               disabled={!dirty}
               onClick={() => data.updateProfile(user.id, { name, avatarColor: color })}

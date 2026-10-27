@@ -23,6 +23,7 @@ export function RoundStandings({ roundId, limit = 3 }: { roundId: string; limit?
         const sub = data.getSubmission(s.submissionId) ?? null;
         return (
           <button
+            type="button"
             key={s.submissionId}
             className={`standing-row clickable${i === 0 ? " top" : ""}`}
             onClick={() => setOpenSub(sub)}

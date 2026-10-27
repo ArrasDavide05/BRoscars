@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useData, type Event } from "@/lib/data";
 import { Avatar } from "./Avatar";
 import { OscarBadge } from "./OscarBadge";
@@ -26,6 +26,7 @@ const STATUS_META = {
 export function EventCard({ event }: { event: Event }) {
   const data = useData();
   const [open, setOpen] = useState(event.status === "live");
+  const roundsId = useId();
   const rounds = data.getEventRounds(event.id);
   const meta = STATUS_META[event.status];
   const broscar = event.status === "complete" ? data.getBroscarUserIds(event.id) : [];
@@ -77,7 +78,13 @@ export function EventCard({ event }: { event: Event }) {
                 Results
               </Link>
             )}
-            <button className="btn btn-sm btn-ghost" onClick={() => setOpen((o) => !o)}>
+            <button
+              type="button"
+              className="btn btn-sm btn-ghost"
+              aria-expanded={open}
+              aria-controls={roundsId}
+              onClick={() => setOpen((o) => !o)}
+            >
               {open ? "Hide rounds" : "Show rounds"}
             </button>
           </div>
@@ -85,7 +92,7 @@ export function EventCard({ event }: { event: Event }) {
       </div>
 
       {open && (
-        <div className="stack" style={{ gap: 8 }}>
+        <div id={roundsId} className="stack" style={{ gap: 8 }}>
           <hr className="divider" />
           {rounds.map((r, i) => {
             const theme = data.getThemeForRound(r.id);

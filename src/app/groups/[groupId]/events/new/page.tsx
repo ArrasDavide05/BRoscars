@@ -97,19 +97,20 @@ export default function NewEventPage({ params }: { params: { groupId: string } }
         <div className="stack" style={{ gap: 6, alignItems: "flex-end" }}>
           <div className="row" style={{ gap: 8 }}>
             <button
+              type="button"
               className="btn btn-sm btn-ghost"
               onClick={() => setPicks(surprisePicks(themes, String(Date.now())))}
             >
               Surprise me 🎲
             </button>
             {promptIds.length > 0 && (
-              <button className="btn btn-sm btn-ghost" onClick={() => setPicks({})}>
+              <button type="button" className="btn btn-sm btn-ghost" onClick={() => setPicks({})}>
                 Clear picks
               </button>
             )}
             <span className={`badge ${promptIds.length ? "revealed" : ""}`}>{promptIds.length} rounds selected</span>
           </div>
-          <button className="btn btn-gold btn-lg" disabled={!draft.ok} onClick={create}>
+          <button type="button" className="btn btn-gold btn-lg" disabled={!draft.ok} onClick={create}>
             Create event →
           </button>
           {reason && (
@@ -133,6 +134,7 @@ export default function NewEventPage({ params }: { params: { groupId: string } }
                 const active = picks[t.id] === pid;
                 return (
                   <button
+                    type="button"
                     key={pid}
                     className={`btn btn-sm${active ? " btn-gold" : " btn-ghost"}`}
                     aria-pressed={active}
