@@ -79,6 +79,7 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
                 {missing === 0 ? "Everyone's in ✓" : `${missing} member${missing === 1 ? "" : "s"} still missing clips`}
               </span>
               <button
+                type="button"
                 className="btn btn-gold"
                 disabled={!isHost}
                 title={isHost ? "Start the live ceremony" : "Only the host can start"}

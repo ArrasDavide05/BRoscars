@@ -25,6 +25,7 @@ export function RatingButtons({
         const active = myRating === o.v;
         return (
           <button
+            type="button"
             key={o.v}
             className={`rate-btn ${o.cls}${active ? " active" : ""}`}
             aria-pressed={active}

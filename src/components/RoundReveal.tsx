@@ -73,6 +73,7 @@ export function RoundReveal({ roundId, onDone }: { roundId: string; onDone?: () 
         const sub = data.getSubmission(s.submissionId) ?? null;
         return (
           <button
+            type="button"
             key={s.submissionId}
             className={`standing-row clickable reveal-in${big ? " top reveal-big reveal-winner" : ""}`}
             onClick={() => setOpenSub(sub)}
@@ -92,7 +93,7 @@ export function RoundReveal({ roundId, onDone }: { roundId: string; onDone?: () 
       })}
       {!done && (
         <div className="row" style={{ justifyContent: "center" }}>
-          <button className="btn btn-sm" onClick={() => setRevealed((r) => r + 1)}>
+          <button type="button" className="btn btn-sm" onClick={() => setRevealed((r) => r + 1)}>
             Reveal next ✉️
           </button>
         </div>
