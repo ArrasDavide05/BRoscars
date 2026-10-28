@@ -111,6 +111,7 @@ export interface LiveState {
   roundIndex: number; // index into event.roundIds
   submissionIndex: number; // index into the round's shuffled play order
   videoStartedAt: number | null; // shared clock for the 30s timer
+  revealedRoundIndex: number | null; // round whose TV reveal finished; null until then (reset on every move)
 }
 
 export interface StoreState {

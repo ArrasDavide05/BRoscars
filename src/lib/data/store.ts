@@ -35,6 +35,7 @@ function initialState(): StoreState {
       roundIndex: 0,
       submissionIndex: 0,
       videoStartedAt: null,
+      revealedRoundIndex: null,
     },
   };
 }
@@ -233,7 +234,7 @@ export const actions = {
     );
     commit({
       db: { ...state.db, events },
-      live: { eventId, phase: "round-intro", roundIndex: 0, submissionIndex: 0, videoStartedAt: null },
+      live: { eventId, phase: "round-intro", roundIndex: 0, submissionIndex: 0, videoStartedAt: null, revealedRoundIndex: null },
     });
   },
 
@@ -270,6 +271,14 @@ export const actions = {
     commit({ ...state, db: { ...db, ratings: [...db.ratings, ...newRatings] } });
   },
 
+  /** TV: the current round's top-3 reveal finished; phones may now show their recap. */
+  async markRoundRevealed(eventId: string) {
+    const { live } = state;
+    if (live.eventId !== eventId || live.phase !== "round-results") return;
+    if (live.revealedRoundIndex === live.roundIndex) return;
+    commit({ ...state, live: { ...live, revealedRoundIndex: live.roundIndex } });
+  },
+
   /** Advance the live night one logical step. Driven by the TV. */
   async advance() {
     const { db, live } = state;
@@ -277,7 +286,7 @@ export const actions = {
     if (!event) return;
 
     if (live.phase === "round-intro") {
-      commit({ ...state, live: { ...live, phase: "playing", submissionIndex: 0, videoStartedAt: Date.now() } });
+      commit({ ...state, live: { ...live, phase: "playing", submissionIndex: 0, videoStartedAt: Date.now(), revealedRoundIndex: null } });
       return;
     }
 
@@ -285,18 +294,18 @@ export const actions = {
       const round = db.rounds.find((r) => r.id === event.roundIds[live.roundIndex]);
       const order = round ? playOrder(db, round.id) : [];
       if (live.submissionIndex + 1 < order.length) {
-        commit({ ...state, live: { ...live, submissionIndex: live.submissionIndex + 1, videoStartedAt: Date.now() } });
+        commit({ ...state, live: { ...live, submissionIndex: live.submissionIndex + 1, videoStartedAt: Date.now(), revealedRoundIndex: null } });
       } else {
-        commit({ ...state, live: { ...live, phase: "round-results", videoStartedAt: null } });
+        commit({ ...state, live: { ...live, phase: "round-results", videoStartedAt: null, revealedRoundIndex: null } });
       }
       return;
     }
 
     if (live.phase === "round-results") {
       if (live.roundIndex + 1 < event.roundIds.length) {
-        commit({ ...state, live: { ...live, roundIndex: live.roundIndex + 1, phase: "round-intro", submissionIndex: 0, videoStartedAt: null } });
+        commit({ ...state, live: { ...live, roundIndex: live.roundIndex + 1, phase: "round-intro", submissionIndex: 0, videoStartedAt: null, revealedRoundIndex: null } });
       } else {
-        commit({ ...state, live: { ...live, phase: "broscar", videoStartedAt: null } });
+        commit({ ...state, live: { ...live, phase: "broscar", videoStartedAt: null, revealedRoundIndex: null } });
       }
       return;
     }
@@ -305,7 +314,7 @@ export const actions = {
       const finalizedDb = finalizeEvent(db, event);
       commit({
         db: finalizedDb,
-        live: { eventId: null, phase: "idle", roundIndex: 0, submissionIndex: 0, videoStartedAt: null },
+        live: { eventId: null, phase: "idle", roundIndex: 0, submissionIndex: 0, videoStartedAt: null, revealedRoundIndex: null },
       });
     }
   },

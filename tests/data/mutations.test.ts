@@ -160,6 +160,7 @@ describe("startLiveEvent", () => {
       roundIndex: 0,
       submissionIndex: 0,
       videoStartedAt: null,
+      revealedRoundIndex: null,
     });
   });
 

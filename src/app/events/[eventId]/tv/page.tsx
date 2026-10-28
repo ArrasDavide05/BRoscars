@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useData, ROUND_SECONDS } from "@/lib/data";
 import { Avatar } from "@/components/Avatar";
 import { TimerRing } from "@/components/TimerRing";
@@ -18,8 +18,6 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
   const event = data.getEvent(params.eventId);
   const live = data.live;
   const advanceRef = useRef("");
-  // Round whose top-3 reveal has reached the winner (UI-only; gates "Next round").
-  const [revealedRoundId, setRevealedRoundId] = useState<string | null>(null);
 
   const isThisLive = Boolean(event && event.status === "live" && live.eventId === event.id);
 
@@ -67,7 +65,7 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
           <h1 className="tv-title-card">{event.title}</h1>
           <p className="muted">{rounds.length} rounds · {data.getMembers(event.groupId).length} players</p>
           {isHost ? (
-            <button className="btn btn-gold btn-lg" onClick={() => data.startLiveEvent(event.id)}>
+            <button type="button" className="btn btn-gold btn-lg" onClick={() => data.startLiveEvent(event.id)}>
               Start the night ▶
             </button>
           ) : (
@@ -96,7 +94,7 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
         <div className="tv-stage">
           <span className="eyebrow">Round {roundNo} · {theme?.name}</span>
           <h1 className="tv-title-card">{prompt?.text}</h1>
-          <button className="btn btn-gold btn-lg" onClick={() => data.advance()}>Start round ▶</button>
+          <button type="button" className="btn btn-gold btn-lg" onClick={() => data.advance()}>Start round ▶</button>
         </div>
       )}
 
@@ -111,13 +109,14 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
           <RoundReveal
             key={round.id}
             roundId={round.id}
-            onDone={() => setRevealedRoundId(round.id)}
+            onDone={() => data.markRoundRevealed(event.id)}
           />
-          {revealedRoundId === round.id && (
+          {/* Shared flag: also releases the personal recap on every phone. */}
+          {live.revealedRoundIndex === live.roundIndex && (
             <>
               <RaceScoreboard eventId={event.id} roundsCompleted={roundNo} totalRounds={rounds.length} />
               <div className="row" style={{ justifyContent: "center" }}>
-                <button className="btn btn-gold btn-lg" onClick={() => data.advance()}>
+                <button type="button" className="btn btn-gold btn-lg" onClick={() => data.advance()}>
                   {roundNo < rounds.length ? "Next round ▶" : "Reveal the BRoscar 🏆"}
                 </button>
               </div>
@@ -131,7 +130,7 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
           <BroscarPanel eventId={event.id} />
           <SuperlativesPanel eventId={event.id} />
           <div className="row" style={{ justifyContent: "center" }}>
-            <button className="btn btn-gold btn-lg" onClick={() => data.advance()}>
+            <button type="button" className="btn btn-gold btn-lg" onClick={() => data.advance()}>
               Finish &amp; save to history
             </button>
           </div>
@@ -204,8 +203,8 @@ function PlayingStage({ roundId, mounted }: { roundId: string; mounted: boolean 
       <div className="muted">{rs.ratedBy.length} / {rs.eligible.length} players rated</div>
 
       <div className="row" style={{ gap: 10 }}>
-        <button className="btn btn-sm" onClick={() => data.castBotRatings()}>🤖 Cast bot ratings</button>
-        <button className="btn btn-sm btn-ghost" onClick={() => data.advance()}>Skip ⏭</button>
+        <button type="button" className="btn btn-sm" onClick={() => data.castBotRatings()}>🤖 Cast bot ratings</button>
+        <button type="button" className="btn btn-sm btn-ghost" onClick={() => data.advance()}>Skip ⏭</button>
       </div>
       <p className="note">Ratings are hidden until the round ends.</p>
     </div>

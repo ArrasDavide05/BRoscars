@@ -117,6 +117,7 @@ export interface DataApi {
   castRating: (roundId: string, submissionId: string, raterId: string, value: RatingValue) => Promise<void>;
   castBotRatings: () => Promise<void>;
   advance: () => Promise<void>;
+  markRoundRevealed: (eventId: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataApi | null>(null);
@@ -284,6 +285,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       castRating: actions.castRating,
       castBotRatings: actions.castBotRatings,
       advance: actions.advance,
+      markRoundRevealed: actions.markRoundRevealed,
     };
   }, [db, live, currentUserId]);
 
