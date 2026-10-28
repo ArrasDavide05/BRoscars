@@ -71,6 +71,7 @@ describe("advance state machine", () => {
       roundIndex: 0,
       submissionIndex: 0,
       videoStartedAt: null,
+      revealedRoundIndex: null,
     });
     expect(event("e_live").status).toBe("complete");
   });

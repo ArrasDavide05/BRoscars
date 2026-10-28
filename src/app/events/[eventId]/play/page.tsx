@@ -6,6 +6,7 @@ import type { User } from "@/lib/data";
 import { Avatar } from "@/components/Avatar";
 import { TimerRing } from "@/components/TimerRing";
 import { RatingButtons } from "@/components/RatingButtons";
+import { PhoneRecap } from "@/components/PhoneRecap";
 import { useTick } from "@/components/useTick";
 import { waitingOnNames } from "@/lib/domain/rater-progress";
 
@@ -45,6 +46,11 @@ export default function PlayPage({ params }: { params: { eventId: string } }) {
     return <PhoneFrame {...frame}><WaitCard icon="🎬" title="Get ready" sub={`Round ${live.roundIndex + 1} is about to start.`} /></PhoneFrame>;
   }
   if (live.phase === "round-results") {
+    // Personal recap only once the TV has finished revealing this round's top 3.
+    const resultsRound = data.getCurrentRound();
+    if (resultsRound && live.revealedRoundIndex === live.roundIndex) {
+      return <PhoneFrame {...frame}><PhoneRecap eventId={event.id} roundId={resultsRound.id} userId={me.id} /></PhoneFrame>;
+    }
     return <PhoneFrame {...frame}><WaitCard icon="📊" title="Round over" sub="Standings are on the TV. Next round soon." /></PhoneFrame>;
   }
   if (live.phase === "broscar") {
