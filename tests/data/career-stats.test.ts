@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { computeCareerStats } from "@/lib/domain/career-stats";
 import { upvotesByUserFrom } from "@/lib/domain/standings";
+import { completedEventInputs } from "@/lib/data/event-inputs";
 
-// getCareerStats lives inside the React provider, so mirror the inputs it builds
-// from the seeded store and check the numbers by hand: baseline + e_past.
+// getCareerStats lives inside the React provider; feed it the same inputs via the
+// real completedEventInputs helper and check the numbers by hand: baseline + e_past.
 let store: typeof import("@/lib/data/store");
 
 beforeEach(async () => {
@@ -24,9 +25,9 @@ describe("seeded career stats", () => {
     const upvotesByUser = upvotesByUserFrom(subs, ratings);
     const alex = db.users.find((u) => u.id === "u_alex")!;
 
-    const stats = computeCareerStats("u_alex", alex.careerBaseline, [
-      { roundWinnerUserIds: rounds.map((r) => r.winnerUserIds), broscarUserIds: past.broscarUserIds, upvotesByUser },
-    ]);
+    const inputs = completedEventInputs(db);
+    expect(inputs).toHaveLength(1);
+    const stats = computeCareerStats("u_alex", alex.careerBaseline, inputs);
 
     expect(stats).toEqual({
       crowns: alex.careerBaseline.crowns + rounds.filter((r) => r.winnerUserIds.includes("u_alex")).length,
