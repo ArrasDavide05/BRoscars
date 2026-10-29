@@ -7,6 +7,7 @@ import { Avatar } from "@/components/Avatar";
 import { TimerRing } from "@/components/TimerRing";
 import { RatingButtons } from "@/components/RatingButtons";
 import { PhoneRecap } from "@/components/PhoneRecap";
+import { PhoneEndCard } from "@/components/PhoneEndCard";
 import { useTick } from "@/components/useTick";
 import { waitingOnNames } from "@/lib/domain/rater-progress";
 
@@ -54,7 +55,8 @@ export default function PlayPage({ params }: { params: { eventId: string } }) {
     return <PhoneFrame {...frame}><WaitCard icon="📊" title="Round over" sub="Standings are on the TV. Next round soon." /></PhoneFrame>;
   }
   if (live.phase === "broscar") {
-    return <PhoneFrame {...frame}><WaitCard icon="🏆" title="And the BRoscar goes to…" sub="Watch the TV for the champion!" /></PhoneFrame>;
+    // The TV shows the BroscarPanel as soon as this phase starts, so no extra reveal gate.
+    return <PhoneFrame {...frame}><PhoneEndCard eventId={event.id} userId={me.id} /></PhoneFrame>;
   }
 
   // phase === 'playing'
