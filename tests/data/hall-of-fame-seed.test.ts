@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { computeHallOfFame } from "@/lib/domain/hall-of-fame";
-import { upvotesByUserFrom } from "@/lib/domain/standings";
+import { completedEventInputs } from "@/lib/data/event-inputs";
 
-// getGroupHallOfFame lives inside the React provider, so mirror the inputs it
-// builds from the seeded store and check the numbers by hand against e_past.
+// getGroupHallOfFame lives inside the React provider; feed it the same inputs via
+// the real completedEventInputs helper and check the numbers by hand against e_past.
 let store: typeof import("@/lib/data/store");
 
 beforeEach(async () => {
@@ -18,16 +18,8 @@ describe("seeded group Hall of Fame", () => {
     const completed = db.events.filter((e) => e.groupId === "g_crew" && e.status === "complete");
     expect(completed.map((e) => e.id)).toEqual(["e_past"]);
 
-    const events = completed.map((ev) => {
-      const rounds = ev.roundIds.map((rid) => db.rounds.find((r) => r.id === rid)!);
-      const subs = db.submissions.filter((s) => ev.roundIds.includes(s.roundId));
-      const ratings = db.ratings.filter((r) => ev.roundIds.includes(r.roundId));
-      return {
-        roundWinnerUserIds: rounds.map((r) => r.winnerUserIds),
-        broscarUserIds: ev.broscarUserIds,
-        upvotesByUser: upvotesByUserFrom(subs, ratings),
-      };
-    });
+    const events = completedEventInputs(db, "g_crew");
+    expect(events).toHaveLength(completed.length);
     const rows = computeHallOfFame(memberIds, events);
 
     // one row per member

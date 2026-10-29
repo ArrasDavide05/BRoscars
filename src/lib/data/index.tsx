@@ -28,6 +28,7 @@ import { submissionProgress, type MemberSubmissionProgress } from "@/lib/domain/
 import { computeHallOfFame, type HallOfFameRow } from "@/lib/domain/hall-of-fame";
 import { computeCareerStats } from "@/lib/domain/career-stats";
 import { computeRaceStandings, type RaceRow } from "@/lib/domain/race";
+import { completedEventInputs } from "./event-inputs";
 import {
   subscribe,
   getSnapshot,
@@ -155,36 +156,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       },
       getCareerStats: (userId) => {
         const base = db.users.find((u) => u.id === userId)?.careerBaseline;
-        const events = db.events
-          .filter((e) => e.status === "complete")
-          .map((ev) => {
-            const rounds = ev.roundIds.map((rid) => db.rounds.find((r) => r.id === rid)).filter((r): r is Round => Boolean(r));
-            const eventSubs = db.submissions.filter((s) => rounds.some((r) => r.id === s.roundId));
-            const eventRatings = db.ratings.filter((rt) => rounds.some((r) => r.id === rt.roundId));
-            return {
-              roundWinnerUserIds: rounds.map((r) => r.winnerUserIds),
-              broscarUserIds: ev.broscarUserIds,
-              upvotesByUser: upvotesByUserFrom(eventSubs, eventRatings),
-            };
-          });
-        return computeCareerStats(userId, base, events);
+        return computeCareerStats(userId, base, completedEventInputs(db));
       },
       // Group-scoped: only this group's finished events, no cross-group careerBaseline.
       getGroupHallOfFame: (groupId) => {
         const memberIds = db.groups.find((g) => g.id === groupId)?.memberIds ?? [];
-        const events = db.events
-          .filter((e) => e.groupId === groupId && e.status === "complete")
-          .map((ev) => {
-            const rounds = ev.roundIds.map((rid) => db.rounds.find((r) => r.id === rid)).filter((r): r is Round => Boolean(r));
-            const eventSubs = db.submissions.filter((s) => rounds.some((r) => r.id === s.roundId));
-            const eventRatings = db.ratings.filter((rt) => rounds.some((r) => r.id === rt.roundId));
-            return {
-              roundWinnerUserIds: rounds.map((r) => r.winnerUserIds),
-              broscarUserIds: ev.broscarUserIds,
-              upvotesByUser: upvotesByUserFrom(eventSubs, eventRatings),
-            };
-          });
-        return computeHallOfFame(memberIds, events);
+        return computeHallOfFame(memberIds, completedEventInputs(db, groupId));
       },
 
       getEvents: (groupId) =>

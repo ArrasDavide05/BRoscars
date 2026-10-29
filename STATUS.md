@@ -7,6 +7,10 @@ Sources: `WORKLOG.md`, `REPORT.md`, `IDEAS.md`, `CLAUDE.md`, plus live verificat
 
 ## 0. Reconstruction caveat
 
+> **Update 2026-10-29:** the repo is now on git/GitHub (`ArrasDavide05/BRoscars`) and is
+> built on Linux by the daily swarm, so history lives in `git log` / PRs. The caveat below
+> describes the 2026-08-05 state and is kept for the record.
+
 **This project is not under version control.** There is no `.git` anywhere in
 `E:\Claude_agent` or `E:\Claude_agent\Version_1.0v`, so `git log` / `git status` /
 `gh issue|pr list` produced nothing. Everything below was reconstructed from the
@@ -77,8 +81,9 @@ upload/storage, and the async read conversion (issue A — that conversion *is* 
 
 ## 3. Left half-finished / loose ends
 
-- **`next build` was never run last session** — WORKLOG §5 admits this; only `tsc --noEmit`
-  was used. It turns out the build **does not pass** (see §4)
+- ~~**`next build` was never run last session** — WORKLOG §5 admits this; only `tsc --noEmit`
+  was used. It turns out the build **does not pass** (see §4)~~ — ✅ resolved 2026-10-29: the
+  repo now builds on Linux and main-check passes `next build`
 - ~~**7 zero-byte junk files in the project root**~~ — ✅ done 2026-10-21: all 7 (`s.id`, `r.id`, `r.id)`, `r.submissionId`, `s.roundId`, `1`, `finalize`) verified 0 bytes and deleted
 - **3 extraneous npm packages installed but not in `package.json`** — `vite-tsconfig-paths`,
   `tsconfck`, `globrex`. Leftovers from the abandoned Vitest plugin approach
