@@ -2,7 +2,7 @@
 
 import { useData } from "@/lib/data";
 
-function ordinal(n: number): string {
+export function ordinal(n: number): string {
   const tens = n % 100;
   if (tens >= 11 && tens <= 13) return `${n}th`;
   return `${n}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
@@ -52,19 +52,19 @@ export function PhoneRecap({
   }
 
   return (
-    <div className="tv-stage" style={{ minHeight: "40vh" }} role="status">
+    <div className="tv-stage" style={{ minHeight: "40vh" }}>
       <div className="spotlight">{mine?.rank === 1 ? "👑" : mine ? "🎬" : "🍿"}</div>
       <span className="eyebrow">Round {roundNo} recap</span>
       {mine ? (
-        <h2 style={{ fontSize: 24 }}>
+        <h2 style={{ fontSize: 24 }} role="status">
           You placed {tied ? "tied " : ""}{ordinal(mine.rank)}{" "}
           <span className="muted">(net {signed(mine.net)})</span>
         </h2>
       ) : (
-        <h2 style={{ fontSize: 24 }}>You sat this one out</h2>
+        <h2 style={{ fontSize: 24 }} role="status">You sat this one out</h2>
       )}
       {raceLine && (
-        <div className="note" style={{ textAlign: "center" }}>
+        <div className="note" style={{ textAlign: "center" }} role="status">
           🏆 {raceLine}
           {myRace && <> · 👑 ×{myRace.crowns} · ▲ {myRace.upvotes}</>}
         </div>
