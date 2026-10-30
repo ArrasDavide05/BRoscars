@@ -1,15 +1,7 @@
 "use client";
 
 import { useData } from "@/lib/data";
-
-export function ordinal(n: number): string {
-  const tens = n % 100;
-  if (tens >= 11 && tens <= 13) return `${n}th`;
-  return `${n}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
-}
-
-const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+import { ordinal, plural, signed } from "@/lib/domain/format";
 
 /**
  * Phone-only personal recap, shown once the TV has finished the round's top-3

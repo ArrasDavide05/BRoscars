@@ -7,6 +7,11 @@ import { Avatar } from "@/components/Avatar";
 import { TrophyCabinet } from "@/components/TrophyCabinet";
 import { PROFILE_NAME_MAX, validateProfileDraft } from "@/lib/domain/profile-draft";
 
+// Loose cap on the raw input: validation trims/collapses whitespace first, so a
+// pasted name with extra spaces must not be cut before it's normalised. The real
+// 40-char limit (and its error) lives in profile-draft.ts.
+const NAME_INPUT_MAX = PROFILE_NAME_MAX + 20;
+
 const PALETTE = [
   { hex: "#E4B04A", label: "Gold" },
   { hex: "#6C8AE4", label: "Blue" },
@@ -91,7 +96,7 @@ function ProfileEditor({ user }: { user: User }) {
           className="input"
           value={name}
           onChange={(e) => { setName(e.target.value); setSaved(false); }}
-          maxLength={PROFILE_NAME_MAX}
+          maxLength={NAME_INPUT_MAX}
           aria-invalid={!draft.ok}
           aria-describedby={draft.error ? "profile-name-error" : undefined}
         />

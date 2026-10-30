@@ -1,7 +1,7 @@
 "use client";
 
 import { useData } from "@/lib/data";
-import { ordinal } from "@/components/PhoneRecap";
+import { ordinal } from "@/lib/domain/format";
 
 const MEDALS: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
