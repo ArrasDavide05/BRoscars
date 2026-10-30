@@ -55,6 +55,10 @@ import type {
 export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress, HallOfFameRow, RaceRow };
 export { ROUND_SECONDS };
 
+export type JoinGroupResult =
+  | { ok: true; groupId: string }
+  | { ok: false; reason: "not-found" | "already-member" };
+
 export interface VideoRatingState {
   eligible: string[];
   ratedBy: string[];
@@ -75,6 +79,8 @@ export interface DataApi {
 
   // groups / people
   getGroups: () => Group[];
+  /** Groups the user is a member of. */
+  getGroupsForUser: (userId: string) => Group[];
   getGroup: (id: string) => Group | undefined;
   getUser: (id: string) => User | undefined;
   getMembers: (groupId: string) => User[];
@@ -114,6 +120,9 @@ export interface DataApi {
   submitVideo: (roundId: string, userId: string, caption: string) => Promise<void>;
   createEvent: (groupId: string, hostId: string, title: string, promptIds: string[], deadline: number) => Promise<string>;
   updateProfile: (userId: string, patch: { name?: string; avatarColor?: string }) => Promise<void>;
+  /** Creates a group with the creator as sole member; rejects on an invalid name. Resolves to the new group id. */
+  createGroup: (creatorId: string, name: string) => Promise<string>;
+  joinGroupByCode: (userId: string, code: string) => Promise<JoinGroupResult>;
   startLiveEvent: (eventId: string) => Promise<void>;
   castRating: (roundId: string, submissionId: string, raterId: string, value: RatingValue) => Promise<void>;
   castBotRatings: () => Promise<void>;
@@ -146,6 +155,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       },
 
       getGroups: () => db.groups,
+      getGroupsForUser: (userId) => db.groups.filter((g) => g.memberIds.includes(userId)),
       getGroup: (id) => db.groups.find((g) => g.id === id),
       getUser: (id) => db.users.find((u) => u.id === id),
       getMembers: (groupId) => {
@@ -258,6 +268,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       submitVideo: actions.submitVideo,
       createEvent: actions.createEvent,
       updateProfile: actions.updateProfile,
+      createGroup: actions.createGroup,
+      joinGroupByCode: actions.joinGroupByCode,
       startLiveEvent: actions.startLiveEvent,
       castRating: actions.castRating,
       castBotRatings: actions.castBotRatings,

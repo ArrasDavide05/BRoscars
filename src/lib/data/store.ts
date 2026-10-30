@@ -12,10 +12,12 @@ import {
   computeRoundWinnerUserIds,
   upvotesByUserFrom,
 } from "@/lib/domain/standings";
+import { generateInviteCode, inviteCodesMatch, validateGroupName } from "@/lib/domain/invite-code";
 import { createSeedDatabase } from "./seed";
 import type {
   Database,
   Event,
+  Group,
   RatingValue,
   Round,
   StoreState,
@@ -212,6 +214,32 @@ export const actions = {
       },
     });
     return eventId;
+  },
+
+  async createGroup(creatorId: string, name: string) {
+    const { name: clean, error } = validateGroupName(name);
+    if (error) throw new Error(error);
+    let inviteCode = generateInviteCode();
+    while (state.db.groups.some((g) => inviteCodesMatch(g.inviteCode, inviteCode))) {
+      inviteCode = generateInviteCode();
+    }
+    const group: Group = { id: nextId("g"), name: clean, inviteCode, createdBy: creatorId, memberIds: [creatorId] };
+    commit({ ...state, db: { ...state.db, groups: [...state.db.groups, group] } });
+    return group.id;
+  },
+
+  async joinGroupByCode(
+    userId: string,
+    code: string
+  ): Promise<{ ok: true; groupId: string } | { ok: false; reason: "not-found" | "already-member" }> {
+    const group = state.db.groups.find((g) => inviteCodesMatch(code, g.inviteCode));
+    if (!group) return { ok: false, reason: "not-found" };
+    if (group.memberIds.includes(userId)) return { ok: false, reason: "already-member" };
+    const groups = state.db.groups.map((g) =>
+      g.id === group.id ? { ...g, memberIds: [...g.memberIds, userId] } : g
+    );
+    commit({ ...state, db: { ...state.db, groups } });
+    return { ok: true, groupId: group.id };
   },
 
   async updateProfile(userId: string, patch: { name?: string; avatarColor?: string }) {

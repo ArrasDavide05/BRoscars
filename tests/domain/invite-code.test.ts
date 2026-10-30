@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { generateInviteCode, formatInviteCode } from "@/lib/domain/invite-code";
+import {
+  generateInviteCode,
+  formatInviteCode,
+  normalizeInviteCode,
+  inviteCodesMatch,
+  validateGroupName,
+  GROUP_NAME_MAX,
+} from "@/lib/domain/invite-code";
 
 const ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
@@ -29,5 +36,57 @@ describe("formatInviteCode", () => {
 
   it("uppercases and leaves non-8-length codes undashed", () => {
     expect(formatInviteCode("abc")).toBe("ABC");
+  });
+});
+
+describe("normalizeInviteCode", () => {
+  it("trims, drops spaces and dashes, uppercases", () => {
+    expect(normalizeInviteCode("  ab cd-12 34 ")).toBe("ABCD1234");
+  });
+
+  it("maps Crockford look-alikes O->0, I->1, L->1", () => {
+    expect(normalizeInviteCode("oIlL")).toBe("0111");
+  });
+
+  it("returns an empty string for blank input", () => {
+    expect(normalizeInviteCode(" - ")).toBe("");
+  });
+});
+
+describe("inviteCodesMatch", () => {
+  it("matches the seed code OSCR2026 in any typed form", () => {
+    for (const typed of ["OSCR2026", "oscr-2026", "0SCR2026", " oscr 2026 "]) {
+      expect(inviteCodesMatch(typed, "OSCR2026")).toBe(true);
+    }
+  });
+
+  it("matches a generated code typed lower-case with a dash", () => {
+    const code = generateInviteCode(seqRand([0.1, 0.3, 0.5, 0.7, 0.9]));
+    expect(inviteCodesMatch(formatInviteCode(code).toLowerCase(), code)).toBe(true);
+  });
+
+  it("rejects different codes and blank input", () => {
+    expect(inviteCodesMatch("OSCR2027", "OSCR2026")).toBe(false);
+    expect(inviteCodesMatch("", "")).toBe(false);
+    expect(inviteCodesMatch("  ", "OSCR2026")).toBe(false);
+  });
+});
+
+describe("validateGroupName", () => {
+  it("trims and collapses inner whitespace", () => {
+    expect(validateGroupName("  Taco   Tuesday  ")).toEqual({ name: "Taco Tuesday", error: null });
+  });
+
+  it("rejects a blank name", () => {
+    expect(validateGroupName("   ").error).toMatch(/blank/);
+  });
+
+  it("accepts exactly the max length and rejects one more", () => {
+    expect(validateGroupName("a".repeat(GROUP_NAME_MAX)).error).toBeNull();
+    expect(validateGroupName("a".repeat(GROUP_NAME_MAX + 1)).error).toMatch(/at most 40/);
+  });
+
+  it("measures length after normalizing", () => {
+    expect(validateGroupName(`  ${"a".repeat(GROUP_NAME_MAX)}   `).error).toBeNull();
   });
 });
