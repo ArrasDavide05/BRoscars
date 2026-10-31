@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useData, type User } from "@/lib/data";
 import { Avatar } from "@/components/Avatar";
 import { TrophyCabinet } from "@/components/TrophyCabinet";
+import { RivalryCard } from "@/components/RivalryCard";
 import { PROFILE_NAME_MAX, validateProfileDraft } from "@/lib/domain/profile-draft";
 
 // Loose cap on the raw input: validation trims/collapses whitespace first, so a
@@ -54,6 +55,8 @@ export default function ProfilePage({ params }: { params: { userId: string } }) 
       </div>
 
       <TrophyCabinet userId={user.id} />
+
+      <RivalryCard userId={user.id} />
 
       {/* editor */}
       {isMe ? (
