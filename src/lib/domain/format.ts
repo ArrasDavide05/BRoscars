@@ -13,3 +13,15 @@ export const signed = (n: number): string => (n > 0 ? `+${n}` : String(n));
 
 /** "1 crown", "0 crowns", "2 crowns". */
 export const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Rough distance from `now` to `ts`: "today", "in 3 days", "1 day ago", "2 months ago". */
+export function relativeDays(ts: number, now: number): string {
+  const days = Math.round((ts - now) / DAY_MS);
+  if (days === 0) return "today";
+  if (days > 0) return `in ${plural(days, "day")}`;
+  const ago = -days;
+  if (ago < 30) return `${plural(ago, "day")} ago`;
+  return `${plural(Math.round(ago / 30), "month")} ago`;
+}

@@ -1,3 +1,5 @@
+import { plural } from "./format";
+
 /**
  * Who is still to rate the current video, as a short human list.
  * `eligible` / `ratedBy` are user ids; `names` maps id -> display name.
@@ -24,5 +26,5 @@ export function waitingOnNames(
   }
   const shown = waiting.slice(0, 2);
   const rest = waiting.length - shown.length;
-  return `${shown.join(", ")} and ${rest} other${rest === 1 ? "" : "s"}`;
+  return `${shown.join(", ")} and ${plural(rest, "other")}`;
 }

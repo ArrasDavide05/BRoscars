@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { useData } from "@/lib/data";
 import { inviteCodesMatch } from "@/lib/domain/invite-code";
+import { plural } from "@/lib/domain/format";
 import { AvatarStack } from "@/components/Avatar";
 
 // Raw input cap is looser than the 40-char rule: validation trims/collapses first.
@@ -65,7 +66,7 @@ export default function LandingPage() {
                     <AvatarStack users={members.slice(0, 6)} />
                   </div>
                   <div className="row wrap" style={{ gap: 8, marginTop: 14 }}>
-                    <span className="badge">{members.length} members</span>
+                    <span className="badge">{plural(members.length, "member")}</span>
                     <span className="badge">{events.length} events</span>
                     {live > 0 && <span className="badge revealed">● {live} live</span>}
                     {upcoming > 0 && <span className="badge open">{upcoming} upcoming</span>}
