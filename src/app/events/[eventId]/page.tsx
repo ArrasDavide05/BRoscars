@@ -10,6 +10,7 @@ import { BroscarPanel } from "@/components/BroscarPanel";
 import { SuperlativesPanel } from "@/components/SuperlativesPanel";
 import { SubmissionProgress } from "@/components/SubmissionProgress";
 import { missingCount } from "@/lib/domain/submission-progress";
+import { plural } from "@/lib/domain/format";
 
 export default function EventPage({ params }: { params: { eventId: string } }) {
   const data = useData();
@@ -45,7 +46,7 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
         </span>
         <h1 style={{ fontSize: 38, fontWeight: 900 }}>{event.title}</h1>
         <span className="faint" style={{ fontSize: 13 }}>
-          {new Date(event.date).toLocaleDateString()} · {rounds.length} rounds · hosted by {data.getUser(event.hostId)?.name}
+          {new Date(event.date).toLocaleDateString()} · {plural(rounds.length, "round")} · hosted by {data.getUser(event.hostId)?.name}
         </span>
       </div>
 
@@ -76,7 +77,7 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
             <div className="row" style={{ gap: 10 }}>
               <span className="note">Deadline {new Date(event.deadline).toLocaleDateString()}</span>
               <span className="muted" style={{ fontSize: 13, color: missing === 0 ? "var(--gold)" : undefined }}>
-                {missing === 0 ? "Everyone's in ✓" : `${missing} member${missing === 1 ? "" : "s"} still missing clips`}
+                {missing === 0 ? "Everyone's in ✓" : `${plural(missing, "member")} still missing clips`}
               </span>
               <button
                 type="button"

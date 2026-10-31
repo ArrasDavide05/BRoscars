@@ -1,6 +1,7 @@
 "use client";
 
 import { useData, type Superlative, type User } from "@/lib/data";
+import { plural } from "@/lib/domain/format";
 import { AvatarStack } from "./Avatar";
 
 const ICON: Record<Superlative["kind"], string> = {
@@ -31,7 +32,7 @@ export function SuperlativesPanel({ eventId }: { eventId: string }) {
         let score: string;
         switch (a.kind) {
           case "peoples-champion":
-            score = `${a.detail.up} upvote${a.detail.up === 1 ? "" : "s"}`;
+            score = plural(a.detail.up, "upvote");
             break;
           case "most-divisive": {
             const caption = data.getSubmission(a.submissionId)?.caption;

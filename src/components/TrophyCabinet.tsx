@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useData } from "@/lib/data";
 import { buildTrophies, type TrophyEventInput } from "@/lib/domain/trophies";
+import { plural } from "@/lib/domain/format";
 import { OscarBadge } from "./OscarBadge";
 
 /** Rounds and nights a member won, from in-app history. */
@@ -56,7 +57,7 @@ export function TrophyCabinet({ userId }: { userId: string }) {
             )}
             {earlierBroscars > 0 && (
               <span className="faint" style={{ fontSize: 13 }}>
-                + {earlierBroscars} earlier BRoscar{earlierBroscars === 1 ? "" : "s"}
+                + {plural(earlierBroscars, "earlier BRoscar")}
               </span>
             )}
           </div>
@@ -80,7 +81,7 @@ export function TrophyCabinet({ userId }: { userId: string }) {
             )}
             {earlierCrowns > 0 && (
               <span className="faint" style={{ fontSize: 13 }}>
-                + {earlierCrowns} earlier crown{earlierCrowns === 1 ? "" : "s"}
+                + {plural(earlierCrowns, "earlier crown")}
               </span>
             )}
           </div>

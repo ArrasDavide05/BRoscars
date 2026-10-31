@@ -5,17 +5,7 @@ import { useId, useState } from "react";
 import { useData, type Event } from "@/lib/data";
 import { Avatar } from "./Avatar";
 import { OscarBadge } from "./OscarBadge";
-
-function relDays(ts: number): string {
-  const diff = ts - Date.now();
-  const days = Math.round(diff / (24 * 60 * 60 * 1000));
-  if (days === 0) return "today";
-  if (days > 0) return `in ${days} day${days === 1 ? "" : "s"}`;
-  const ago = -days;
-  if (ago < 30) return `${ago} day${ago === 1 ? "" : "s"} ago`;
-  const months = Math.round(ago / 30);
-  return `${months} month${months === 1 ? "" : "s"} ago`;
-}
+import { plural, relativeDays } from "@/lib/domain/format";
 
 const STATUS_META = {
   upcoming: { cls: "open", label: "Upcoming" },
@@ -38,7 +28,7 @@ export function EventCard({ event }: { event: Event }) {
           <span className={`badge ${meta.cls}`}>{meta.label}</span>
           <h3 style={{ fontSize: 22 }}>{event.title}</h3>
           <span className="faint" style={{ fontSize: 13 }}>
-            {new Date(event.date).toLocaleDateString()} · {relDays(event.date)} · {rounds.length} rounds
+            {new Date(event.date).toLocaleDateString()} · {relativeDays(event.date, Date.now())} · {plural(rounds.length, "round")}
           </span>
         </div>
 

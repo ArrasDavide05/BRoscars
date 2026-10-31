@@ -7,6 +7,7 @@ import { Avatar, AvatarStack } from "@/components/Avatar";
 import { EventCard } from "@/components/EventCard";
 import { HallOfFame } from "@/components/HallOfFame";
 import { formatInviteCode } from "@/lib/domain/invite-code";
+import { plural } from "@/lib/domain/format";
 
 export default function GroupHomePage({ params }: { params: { groupId: string } }) {
   const data = useData();
@@ -55,7 +56,7 @@ export default function GroupHomePage({ params }: { params: { groupId: string } 
 
         <div className="row" style={{ gap: 12 }}>
           <AvatarStack users={members} />
-          <span className="muted" style={{ fontSize: 13 }}>{members.length} members</span>
+          <span className="muted" style={{ fontSize: 13 }}>{plural(members.length, "member")}</span>
         </div>
 
         {showMembers && (
