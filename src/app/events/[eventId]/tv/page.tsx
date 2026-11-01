@@ -81,6 +81,7 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
   const theme = round ? data.getThemeForRound(round.id) : undefined;
   const prompt = round ? data.getPromptForRound(round.id) : undefined;
   const roundNo = live.roundIndex + 1;
+  const roundIsEmpty = !round || data.getPlayOrder(round.id).length === 0;
 
   return (
     <div className="stack" style={{ gap: 18, paddingTop: 24 }}>
@@ -94,11 +95,14 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
         <div className="tv-stage">
           <span className="eyebrow">Round {roundNo} · {theme?.name}</span>
           <h1 className="tv-title-card">{prompt?.text}</h1>
-          <button type="button" className="btn btn-gold btn-lg" onClick={() => data.advance()}>Start round ▶</button>
+          {roundIsEmpty && <p className="muted">No entries this round</p>}
+          <button type="button" className="btn btn-gold btn-lg" onClick={() => data.advance()}>
+            {roundIsEmpty ? "Skip round ▶" : "Start round ▶"}
+          </button>
         </div>
       )}
 
-      {live.phase === "playing" && round && <PlayingStage roundId={round.id} mounted={mounted} />}
+      {live.phase === "playing" && (round ? <PlayingStage roundId={round.id} mounted={mounted} /> : <EmptyPlayingStage />)}
 
       {live.phase === "round-results" && round && (
         <div className="stack" style={{ gap: 16 }}>
@@ -165,12 +169,23 @@ function TvHeader({
   );
 }
 
+// Defensive: "playing" with nothing to play would otherwise leave the TV blank and stuck.
+function EmptyPlayingStage() {
+  const data = useData();
+  return (
+    <div className="tv-stage">
+      <p className="muted">No entries this round</p>
+      <button type="button" className="btn btn-gold btn-lg" onClick={() => data.advance()}>Skip round ▶</button>
+    </div>
+  );
+}
+
 function PlayingStage({ roundId, mounted }: { roundId: string; mounted: boolean }) {
   const data = useData();
   const live = data.live;
   const order = data.getPlayOrder(roundId);
   const sub = order[live.submissionIndex];
-  if (!sub) return null;
+  if (!sub) return <EmptyPlayingStage />;
   const uploader = data.getUser(sub.userId)!;
   const rs = data.getVideoRatingState(sub.id);
   const remaining = mounted
