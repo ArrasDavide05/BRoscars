@@ -29,6 +29,7 @@ import { computeHallOfFame, type HallOfFameRow } from "@/lib/domain/hall-of-fame
 import { computeCareerStats } from "@/lib/domain/career-stats";
 import { computeRaceStandings, type RaceRow } from "@/lib/domain/race";
 import { computeRivalries, type RivalryResult, type RivalryRow } from "@/lib/domain/rivalries";
+import { findByInviteCode } from "@/lib/domain/invite-code";
 import { completedEventInputs } from "./event-inputs";
 import { completedRivalryInputs } from "./rivalry-inputs";
 import {
@@ -84,6 +85,8 @@ export interface DataApi {
   /** Groups the user is a member of. */
   getGroupsForUser: (userId: string) => Group[];
   getGroup: (id: string) => Group | undefined;
+  /** Read-only lookup by invite code (typed or from a /join link), normalized like joinGroupByCode. */
+  getGroupByInviteCode: (code: string) => Group | undefined;
   getUser: (id: string) => User | undefined;
   getMembers: (groupId: string) => User[];
   getCareerStats: (userId: string) => CareerBaseline;
@@ -161,6 +164,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       getGroups: () => db.groups,
       getGroupsForUser: (userId) => db.groups.filter((g) => g.memberIds.includes(userId)),
       getGroup: (id) => db.groups.find((g) => g.id === id),
+      getGroupByInviteCode: (code) => findByInviteCode(db.groups, code),
       getUser: (id) => db.users.find((u) => u.id === id),
       getMembers: (groupId) => {
         const g = db.groups.find((x) => x.id === groupId);
