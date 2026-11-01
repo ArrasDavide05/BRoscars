@@ -62,7 +62,9 @@ export default function PlayPage({ params }: { params: { eventId: string } }) {
   // phase === 'playing'
   const round = data.getCurrentRound();
   const sub = data.getCurrentSubmission();
-  if (!round || !sub) return <PhoneFrame {...frame}><WaitCard icon="⏳" title="Loading…" sub="" /></PhoneFrame>;
+  if (!round || !sub) {
+    return <PhoneFrame {...frame}><WaitCard icon="🎬" title="No entries this round" sub="Nothing to rate. Watch the TV for the next round." /></PhoneFrame>;
+  }
 
   const uploader = data.getUser(sub.userId)!;
   const isMine = sub.userId === me.id;

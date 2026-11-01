@@ -67,7 +67,7 @@ export default function LandingPage() {
                   </div>
                   <div className="row wrap" style={{ gap: 8, marginTop: 14 }}>
                     <span className="badge">{plural(members.length, "member")}</span>
-                    <span className="badge">{events.length} events</span>
+                    <span className="badge">{plural(events.length, "event")}</span>
                     {live > 0 && <span className="badge revealed">● {live} live</span>}
                     {upcoming > 0 && <span className="badge open">{upcoming} upcoming</span>}
                   </div>

@@ -314,6 +314,12 @@ export const actions = {
     if (!event) return;
 
     if (live.phase === "round-intro") {
+      const round = db.rounds.find((r) => r.id === event.roundIds[live.roundIndex]);
+      if (!round || playOrder(db, round.id).length === 0) {
+        // Nothing to play: skip straight to the (empty) results so the night can't freeze.
+        commit({ ...state, live: { ...live, phase: "round-results", submissionIndex: 0, videoStartedAt: null, revealedRoundIndex: null } });
+        return;
+      }
       commit({ ...state, live: { ...live, phase: "playing", submissionIndex: 0, videoStartedAt: Date.now(), revealedRoundIndex: null } });
       return;
     }
