@@ -6,6 +6,7 @@ import { useData } from "@/lib/data";
 import { Avatar, AvatarStack } from "@/components/Avatar";
 import { EventCard } from "@/components/EventCard";
 import { HallOfFame } from "@/components/HallOfFame";
+import { InviteLinkButton } from "@/components/InviteLinkButton";
 import { formatInviteCode } from "@/lib/domain/invite-code";
 import { plural } from "@/lib/domain/format";
 
@@ -38,10 +39,11 @@ export default function GroupHomePage({ params }: { params: { groupId: string } 
         <span className="eyebrow">Group</span>
         <div className="row between wrap" style={{ gap: 16 }}>
           <h1 style={{ fontSize: 40, fontWeight: 900, letterSpacing: "-0.5px" }}>{group.name}</h1>
-          <div className="row" style={{ gap: 12 }}>
-            <span className="faint" style={{ fontSize: 13 }}>
+          <div className="row wrap" style={{ gap: 12, alignItems: "flex-start" }}>
+            <span className="faint" style={{ fontSize: 13, lineHeight: "32px" }}>
               Invite <span className="pill-code">{formatInviteCode(group.inviteCode)}</span>
             </span>
+            <InviteLinkButton inviteCode={group.inviteCode} />
             <button
               type="button"
               className="btn btn-sm"

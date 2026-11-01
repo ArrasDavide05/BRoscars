@@ -6,6 +6,8 @@ import {
   inviteCodesMatch,
   validateGroupName,
   GROUP_NAME_MAX,
+  findByInviteCode,
+  inviteLinkPath,
 } from "@/lib/domain/invite-code";
 
 const ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
@@ -88,5 +90,38 @@ describe("validateGroupName", () => {
 
   it("measures length after normalizing", () => {
     expect(validateGroupName(`  ${"a".repeat(GROUP_NAME_MAX)}   `).error).toBeNull();
+  });
+});
+
+describe("findByInviteCode", () => {
+  const groups = [
+    { id: "a", inviteCode: "OSCR2026" },
+    { id: "b", inviteCode: "7K3M9QXZ" },
+  ];
+
+  it("matches linked/typed variants after normalizing", () => {
+    for (const code of ["OSCR-2026", "oscr2026", "OSCR2026", "0SCR-2026", " oscr 2026 "]) {
+      expect(findByInviteCode(groups, code)?.id).toBe("a");
+    }
+    expect(findByInviteCode(groups, "7k3m-9qxz")?.id).toBe("b");
+  });
+
+  it("returns undefined for unknown or blank codes", () => {
+    expect(findByInviteCode(groups, "NOPE-NOPE")).toBeUndefined();
+    expect(findByInviteCode(groups, "  ")).toBeUndefined();
+    expect(findByInviteCode([], "OSCR2026")).toBeUndefined();
+  });
+});
+
+describe("inviteLinkPath", () => {
+  it("builds /join/XXXX-XXXX from the formatted code", () => {
+    expect(inviteLinkPath("OSCR2026")).toBe("/join/OSCR-2026");
+    expect(inviteLinkPath("7k3m9qxz")).toBe("/join/7K3M-9QXZ");
+  });
+
+  it("round-trips: the path's code finds the same group", () => {
+    const groups = [{ id: "a", inviteCode: "OSCR2026" }];
+    const code = decodeURIComponent(inviteLinkPath("OSCR2026").slice("/join/".length));
+    expect(findByInviteCode(groups, code)?.id).toBe("a");
   });
 });

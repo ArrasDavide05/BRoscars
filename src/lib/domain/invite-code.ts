@@ -37,6 +37,16 @@ export function inviteCodesMatch(a: string, b: string): boolean {
   return na.length > 0 && na === normalizeInviteCode(b);
 }
 
+/** First item whose invite code matches the typed/linked code (normalized both sides). */
+export function findByInviteCode<T extends { inviteCode: string }>(items: T[], code: string): T | undefined {
+  return items.find((it) => inviteCodesMatch(code, it.inviteCode));
+}
+
+/** App-relative invite link for a code, e.g. "OSCR2026" -> "/join/OSCR-2026". */
+export function inviteLinkPath(code: string): string {
+  return `/join/${encodeURIComponent(formatInviteCode(code))}`;
+}
+
 export const GROUP_NAME_MAX = 40;
 
 /** Group name validation: trim + collapse inner whitespace, 1-40 chars. */
