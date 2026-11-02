@@ -14,6 +14,9 @@ export const signed = (n: number): string => (n > 0 ? `+${n}` : String(n));
 /** "1 crown", "0 crowns", "2 crowns". */
 export const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? "" : "s"}`;
 
+/** Shown on TV, phone and reveal when a round had no submissions. */
+export const NO_ENTRIES_TEXT = "No entries this round";
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Rough distance from `now` to `ts`: "today", "in 3 days", "1 day ago", "2 months ago". */

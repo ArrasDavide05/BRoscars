@@ -1,6 +1,7 @@
 "use client";
 
 import { useData } from "@/lib/data";
+import { plural } from "@/lib/domain/format";
 import { Avatar } from "./Avatar";
 import { OscarBadge } from "./OscarBadge";
 
@@ -42,7 +43,7 @@ export function BroscarPanel({ eventId }: { eventId: string }) {
           })}
         </div>
         <p className="muted" style={{ marginTop: 14 }}>
-          Won {champions.length ? wonBy[champions[0]] : 0} of {rounds.length} rounds.
+          Won {champions.length ? wonBy[champions[0]] : 0} of {plural(rounds.length, "round")}.
         </p>
       </div>
 

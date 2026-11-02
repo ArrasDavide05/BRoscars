@@ -11,6 +11,7 @@ import { BroscarPanel } from "@/components/BroscarPanel";
 import { SuperlativesPanel } from "@/components/SuperlativesPanel";
 import { RaceScoreboard } from "@/components/RaceScoreboard";
 import { useTick } from "@/components/useTick";
+import { NO_ENTRIES_TEXT, plural } from "@/lib/domain/format";
 
 export default function TvPage({ params }: { params: { eventId: string } }) {
   const data = useData();
@@ -63,7 +64,7 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
         <div className="tv-stage">
           <div className="spotlight">📺</div>
           <h1 className="tv-title-card">{event.title}</h1>
-          <p className="muted">{rounds.length} rounds · {data.getMembers(event.groupId).length} players</p>
+          <p className="muted">{plural(rounds.length, "round")} · {plural(data.getMembers(event.groupId).length, "player")}</p>
           {isHost ? (
             <button type="button" className="btn btn-gold btn-lg" onClick={() => data.startLiveEvent(event.id)}>
               Start the night ▶
@@ -95,7 +96,7 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
         <div className="tv-stage">
           <span className="eyebrow">Round {roundNo} · {theme?.name}</span>
           <h1 className="tv-title-card">{prompt?.text}</h1>
-          {roundIsEmpty && <p className="muted">No entries this round</p>}
+          {roundIsEmpty && <p className="muted">{NO_ENTRIES_TEXT}</p>}
           <button type="button" className="btn btn-gold btn-lg" onClick={() => data.advance()}>
             {roundIsEmpty ? "Skip round ▶" : "Start round ▶"}
           </button>
@@ -174,7 +175,7 @@ function EmptyPlayingStage() {
   const data = useData();
   return (
     <div className="tv-stage">
-      <p className="muted">No entries this round</p>
+      <p className="muted">{NO_ENTRIES_TEXT}</p>
       <button type="button" className="btn btn-gold btn-lg" onClick={() => data.advance()}>Skip round ▶</button>
     </div>
   );
@@ -215,7 +216,7 @@ function PlayingStage({ roundId, mounted }: { roundId: string; mounted: boolean 
 
       <TimerRing remaining={remaining} total={ROUND_SECONDS} />
       <RaterStrip eligible={rs.eligible} ratedBy={rs.ratedBy} />
-      <div className="muted">{rs.ratedBy.length} / {rs.eligible.length} players rated</div>
+      <div className="muted">{rs.ratedBy.length} / {plural(rs.eligible.length, "player")} rated</div>
 
       <div className="row" style={{ gap: 10 }}>
         <button type="button" className="btn btn-sm" onClick={() => data.castBotRatings()}>🤖 Cast bot ratings</button>

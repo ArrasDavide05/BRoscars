@@ -48,7 +48,7 @@ export function TrophyCabinet({ userId }: { userId: string }) {
                   <strong>{b.eventTitle}</strong>
                 </span>
                 <span className="faint" style={{ fontSize: 12 }}>
-                  {b.roundsWon} of {b.roundCount} rounds · {new Date(b.date).toLocaleDateString()}
+                  {b.roundsWon} of {plural(b.roundCount, "round")} · {new Date(b.date).toLocaleDateString()}
                 </span>
               </Link>
             ))}

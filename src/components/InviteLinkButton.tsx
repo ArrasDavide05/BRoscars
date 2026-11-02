@@ -39,7 +39,7 @@ export function InviteLinkButton({ inviteCode }: { inviteCode: string }) {
         {status === "fallback" && (
           <>
             Copy this link:{" "}
-            <span className="pill-code" style={{ userSelect: "all", letterSpacing: 0.5 }}>{link}</span>
+            <span className="pill-code" style={{ userSelect: "all", letterSpacing: 0.5, overflowWrap: "anywhere" }}>{link}</span>
           </>
         )}
       </span>

@@ -60,7 +60,8 @@ export { ROUND_SECONDS };
 
 export type JoinGroupResult =
   | { ok: true; groupId: string }
-  | { ok: false; reason: "not-found" | "already-member" };
+  | { ok: false; reason: "not-found" }
+  | { ok: false; reason: "already-member"; groupId: string };
 
 export interface VideoRatingState {
   eligible: string[];

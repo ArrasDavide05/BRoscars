@@ -46,12 +46,12 @@ export default function JoinPage({ params }: { params: { code: string } }) {
     setBusy(true);
     setError(null);
     const res = await data.joinGroupByCode(data.currentUserId, code);
-    if (res.ok) {
+    if (res.ok || res.reason === "already-member") {
       router.push(`/groups/${res.groupId}`);
       return;
     }
     setBusy(false);
-    if (res.reason === "not-found") setError("No group with that code.");
+    setError("No group with that code.");
   };
 
   return (

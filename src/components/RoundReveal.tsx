@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useData, type Submission } from "@/lib/data";
 import { groupRevealSteps } from "@/lib/domain/reveal-steps";
+import { NO_ENTRIES_TEXT } from "@/lib/domain/format";
 import { Avatar } from "./Avatar";
 import { VideoModal } from "./VideoModal";
 
@@ -37,7 +38,7 @@ export function RoundReveal({ roundId, onDone }: { roundId: string; onDone?: () 
   }, [done]);
 
   if (steps.length === 0) {
-    return <p className="muted" style={{ textAlign: "center" }}>No entries this round.</p>;
+    return <p className="muted" style={{ textAlign: "center" }}>{NO_ENTRIES_TEXT}</p>;
   }
 
   // Steps run lowest place first, so step index i is revealed once revealed > i.
