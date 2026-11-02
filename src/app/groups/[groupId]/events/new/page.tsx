@@ -11,6 +11,7 @@ import {
   validateEventDraft,
 } from "@/lib/domain/event-draft";
 import { surprisePicks } from "@/lib/domain/surprise-picks";
+import { plural } from "@/lib/domain/format";
 
 function defaultDeadline(): string {
   return toDateInputValue(Date.now() + 5 * 24 * 60 * 60 * 1000);
@@ -108,7 +109,7 @@ export default function NewEventPage({ params }: { params: { groupId: string } }
                 Clear picks
               </button>
             )}
-            <span className={`badge ${promptIds.length ? "revealed" : ""}`}>{promptIds.length} rounds selected</span>
+            <span className={`badge ${promptIds.length ? "revealed" : ""}`}>{plural(promptIds.length, "round")} selected</span>
           </div>
           <button type="button" className="btn btn-gold btn-lg" disabled={!draft.ok} onClick={create}>
             Create event →

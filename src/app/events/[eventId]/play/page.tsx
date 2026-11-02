@@ -10,6 +10,7 @@ import { PhoneRecap } from "@/components/PhoneRecap";
 import { PhoneEndCard } from "@/components/PhoneEndCard";
 import { useTick } from "@/components/useTick";
 import { waitingOnNames } from "@/lib/domain/rater-progress";
+import { NO_ENTRIES_TEXT } from "@/lib/domain/format";
 
 export default function PlayPage({ params }: { params: { eventId: string } }) {
   const data = useData();
@@ -63,7 +64,7 @@ export default function PlayPage({ params }: { params: { eventId: string } }) {
   const round = data.getCurrentRound();
   const sub = data.getCurrentSubmission();
   if (!round || !sub) {
-    return <PhoneFrame {...frame}><WaitCard icon="🎬" title="No entries this round" sub="Nothing to rate. Watch the TV for the next round." /></PhoneFrame>;
+    return <PhoneFrame {...frame}><WaitCard icon="🎬" title={NO_ENTRIES_TEXT} sub="Nothing to rate. Watch the TV for the next round." /></PhoneFrame>;
   }
 
   const uploader = data.getUser(sub.userId)!;

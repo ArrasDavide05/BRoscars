@@ -65,7 +65,11 @@ describe("joinGroupByCode", () => {
     const id = await store.actions.createGroup("u_bella", "Taco Tuesday");
     const code = group(id).inviteCode;
     await store.actions.joinGroupByCode("u_chris", code);
-    expect(await store.actions.joinGroupByCode("u_chris", code)).toEqual({ ok: false, reason: "already-member" });
+    expect(await store.actions.joinGroupByCode("u_chris", code)).toEqual({
+      ok: false,
+      reason: "already-member",
+      groupId: id,
+    });
     expect(group(id).memberIds).toEqual(["u_bella", "u_chris"]);
   });
 
@@ -74,6 +78,7 @@ describe("joinGroupByCode", () => {
     expect(await store.actions.joinGroupByCode("u_bella", group(id).inviteCode)).toEqual({
       ok: false,
       reason: "already-member",
+      groupId: id,
     });
   });
 
@@ -89,6 +94,7 @@ describe("joinGroupByCode", () => {
     expect(await store.actions.joinGroupByCode(memberId, "oscr-2026")).toEqual({
       ok: false,
       reason: "already-member",
+      groupId: "g_crew",
     });
     expect(await store.actions.joinGroupByCode("u_newbie", "0SCR2026")).toEqual({ ok: true, groupId: "g_crew" });
     expect(group("g_crew").memberIds).toContain("u_newbie");

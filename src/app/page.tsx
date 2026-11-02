@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { useData } from "@/lib/data";
-import { inviteCodesMatch } from "@/lib/domain/invite-code";
 import { plural } from "@/lib/domain/format";
 import { AvatarStack } from "@/components/Avatar";
 
@@ -134,11 +133,13 @@ function CreateGroupForm() {
 }
 
 function JoinGroupForm() {
-  const { currentUserId, joinGroupByCode, getGroupsForUser } = useData();
+  const { currentUserId, joinGroupByCode, getGroup } = useData();
   const router = useRouter();
   const [code, setCode] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [alreadyInId, setAlreadyInId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const alreadyIn = alreadyInId ? getGroup(alreadyInId) : undefined;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -152,9 +153,7 @@ function JoinGroupForm() {
     if (res.reason === "not-found") {
       setMessage("No group with that code.");
     } else {
-      // Already a member: the group is one of ours, so name it.
-      const group = getGroupsForUser(currentUserId).find((g) => inviteCodesMatch(code, g.inviteCode));
-      setMessage(`You're already in ${group?.name ?? "that group"}.`);
+      setAlreadyInId(res.groupId);
     }
   };
 
@@ -168,7 +167,7 @@ function JoinGroupForm() {
         id="join-group-code"
         className="input pill-code"
         value={code}
-        onChange={(e) => { setCode(e.target.value); setMessage(null); }}
+        onChange={(e) => { setCode(e.target.value); setMessage(null); setAlreadyInId(null); }}
         maxLength={20}
         placeholder="XXXX-XXXX"
         autoComplete="off"
@@ -177,6 +176,14 @@ function JoinGroupForm() {
       />
       <div id="join-group-result" role="alert" style={{ fontSize: 12, color: "var(--danger)", minHeight: 16 }}>
         {message}
+        {alreadyIn && (
+          <span className="muted">
+            You&apos;re already in {alreadyIn.name}.{" "}
+            <Link href={`/groups/${alreadyIn.id}`} style={{ color: "var(--gold)" }}>
+              Go to group →
+            </Link>
+          </span>
+        )}
       </div>
       <div className="row">
         <button type="submit" className="btn btn-gold" disabled={busy || code.trim() === ""}>

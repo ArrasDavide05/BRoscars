@@ -231,10 +231,14 @@ export const actions = {
   async joinGroupByCode(
     userId: string,
     code: string
-  ): Promise<{ ok: true; groupId: string } | { ok: false; reason: "not-found" | "already-member" }> {
+  ): Promise<
+    | { ok: true; groupId: string }
+    | { ok: false; reason: "not-found" }
+    | { ok: false; reason: "already-member"; groupId: string }
+  > {
     const group = state.db.groups.find((g) => inviteCodesMatch(code, g.inviteCode));
     if (!group) return { ok: false, reason: "not-found" };
-    if (group.memberIds.includes(userId)) return { ok: false, reason: "already-member" };
+    if (group.memberIds.includes(userId)) return { ok: false, reason: "already-member", groupId: group.id };
     const groups = state.db.groups.map((g) =>
       g.id === group.id ? { ...g, memberIds: [...g.memberIds, userId] } : g
     );
