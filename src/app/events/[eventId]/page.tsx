@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useData } from "@/lib/data";
@@ -11,6 +12,14 @@ import { SuperlativesPanel } from "@/components/SuperlativesPanel";
 import { SubmissionProgress } from "@/components/SubmissionProgress";
 import { missingCount } from "@/lib/domain/submission-progress";
 import { plural } from "@/lib/domain/format";
+import { deadlineStatus, type DeadlineKind } from "@/lib/domain/deadline";
+
+const DEADLINE_STYLE: Record<DeadlineKind, CSSProperties | undefined> = {
+  open: undefined,
+  tomorrow: { color: "var(--gold)", borderColor: "var(--gold-deep)" },
+  today: { color: "var(--gold)", borderColor: "var(--gold)", fontWeight: 700 },
+  passed: { color: "var(--danger)", borderColor: "var(--danger)" },
+};
 
 export default function EventPage({ params }: { params: { eventId: string } }) {
   const data = useData();
@@ -32,7 +41,9 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
   const members = data.getMembers(event.groupId);
 
   const mySubmitted = rounds.filter((r) => data.getSubmissionByUser(r.id, data.currentUserId)).length;
+  const myOwed = rounds.length - mySubmitted;
   const missing = missingCount(data.getSubmissionProgress(event.id));
+  const deadline = deadlineStatus(event.deadline, Date.now());
 
   return (
     <div className="stack" style={{ gap: 24, paddingTop: 24 }}>
@@ -73,9 +84,16 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
               <span className="muted" style={{ fontSize: 13 }}>
                 Submit a clip for each round before the night. You only see your own entries until it goes live.
               </span>
+              {myOwed > 0 && deadline.kind !== "passed" && (
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--gold)" }}>
+                  You still owe {plural(myOwed, "clip")}
+                </span>
+              )}
             </div>
             <div className="row" style={{ gap: 10 }}>
-              <span className="note">Deadline {new Date(event.deadline).toLocaleDateString()}</span>
+              <span className="note" style={DEADLINE_STYLE[deadline.kind]}>
+                {deadline.label} · {new Date(event.deadline).toLocaleDateString()}
+              </span>
               <span className="muted" style={{ fontSize: 13, color: missing === 0 ? "var(--gold)" : undefined }}>
                 {missing === 0 ? "Everyone's in ✓" : `${plural(missing, "member")} still missing clips`}
               </span>

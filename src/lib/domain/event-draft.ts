@@ -19,7 +19,8 @@ export interface EventDraftResult {
   warnings: string[];
 }
 
-function startOfLocalDay(ms: number): number {
+/** Local midnight at the start of the day containing `ms`, epoch ms. */
+export function startOfLocalDay(ms: number): number {
   const d = new Date(ms);
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 }
