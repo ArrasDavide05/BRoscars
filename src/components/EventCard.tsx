@@ -6,6 +6,14 @@ import { useData, type Event } from "@/lib/data";
 import { Avatar } from "./Avatar";
 import { OscarBadge } from "./OscarBadge";
 import { plural, relativeDays } from "@/lib/domain/format";
+import { deadlineStatus, type DeadlineKind } from "@/lib/domain/deadline";
+
+const DEADLINE_COLOR: Record<DeadlineKind, string | undefined> = {
+  open: undefined,
+  tomorrow: "var(--gold)",
+  today: "var(--gold)",
+  passed: "var(--danger)",
+};
 
 const STATUS_META = {
   upcoming: { cls: "open", label: "Upcoming" },
@@ -20,6 +28,7 @@ export function EventCard({ event }: { event: Event }) {
   const rounds = data.getEventRounds(event.id);
   const meta = STATUS_META[event.status];
   const broscar = event.status === "complete" ? data.getBroscarUserIds(event.id) : [];
+  const deadline = event.status === "upcoming" ? deadlineStatus(event.deadline, Date.now()) : null;
 
   return (
     <div className="panel pad stack" style={{ gap: 14 }}>
@@ -29,6 +38,14 @@ export function EventCard({ event }: { event: Event }) {
           <h3 style={{ fontSize: 22 }}>{event.title}</h3>
           <span className="faint" style={{ fontSize: 13 }}>
             {new Date(event.date).toLocaleDateString()} · {relativeDays(event.date, Date.now())} · {plural(rounds.length, "round")}
+            {deadline && (
+              <>
+                {" · "}
+                <span style={{ color: DEADLINE_COLOR[deadline.kind], fontWeight: deadline.kind === "open" ? undefined : 600 }}>
+                  {deadline.label}
+                </span>
+              </>
+            )}
           </span>
         </div>
 
