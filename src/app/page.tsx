@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 import { useData } from "@/lib/data";
 import { plural } from "@/lib/domain/format";
 import { AvatarStack } from "@/components/Avatar";
+import { NextUpPanel } from "@/components/NextUpPanel";
 
 // Raw input cap is looser than the 40-char rule: validation trims/collapses first.
 const GROUP_NAME_INPUT_MAX = 60;
@@ -41,6 +42,8 @@ export default function LandingPage() {
           <span className="note">Prototype · in-memory · offline · no login</span>
         </div>
       </section>
+
+      <NextUpPanel />
 
       <section className="stack">
         <div className="section-title">Your groups</div>

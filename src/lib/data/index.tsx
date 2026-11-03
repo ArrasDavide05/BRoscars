@@ -29,9 +29,11 @@ import { computeHallOfFame, type HallOfFameRow } from "@/lib/domain/hall-of-fame
 import { computeCareerStats } from "@/lib/domain/career-stats";
 import { computeRaceStandings, type RaceRow } from "@/lib/domain/race";
 import { computeRivalries, type RivalryResult, type RivalryRow } from "@/lib/domain/rivalries";
+import { computeNextUp, type NextUpItem } from "@/lib/domain/next-up";
 import { findByInviteCode } from "@/lib/domain/invite-code";
 import { completedEventInputs } from "./event-inputs";
 import { completedRivalryInputs } from "./rivalry-inputs";
+import { nextUpInputs } from "./next-up-inputs";
 import {
   subscribe,
   getSnapshot,
@@ -55,7 +57,7 @@ import type {
   User,
 } from "./types";
 
-export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress, HallOfFameRow, RaceRow, RivalryResult, RivalryRow };
+export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress, HallOfFameRow, RaceRow, RivalryResult, RivalryRow, NextUpItem };
 export { ROUND_SECONDS };
 
 export type JoinGroupResult =
@@ -98,6 +100,8 @@ export interface DataApi {
   // events / rounds
   getEvents: (groupId: string) => Event[];
   getEvent: (id: string) => Event | undefined;
+  /** Live and upcoming nights in the user's groups, with that user's own clips owed. */
+  getNextUp: (userId: string) => NextUpItem[];
   getEventRounds: (eventId: string) => Round[];
   getRound: (roundId: string) => Round | undefined;
   getPromptForRound: (roundId: string) => Prompt | undefined;
@@ -187,6 +191,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       getEvents: (groupId) =>
         db.events.filter((e) => e.groupId === groupId).sort((a, b) => b.date - a.date),
       getEvent: (id) => db.events.find((e) => e.id === id),
+      getNextUp: (userId) => computeNextUp(nextUpInputs(db, userId)),
       getEventRounds: (eventId) => {
         const ev = db.events.find((e) => e.id === eventId);
         return (ev?.roundIds ?? [])
