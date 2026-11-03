@@ -44,6 +44,8 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
   const myOwed = rounds.length - mySubmitted;
   const missing = missingCount(data.getSubmissionProgress(event.id));
   const deadline = deadlineStatus(event.deadline, Date.now());
+  const liveEvent = data.getLiveEvent();
+  const otherLive = liveEvent?.id === event.id ? undefined : liveEvent;
 
   return (
     <div className="stack" style={{ gap: 24, paddingTop: 24 }}>
@@ -89,6 +91,14 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
                   You still owe {plural(myOwed, "clip")}
                 </span>
               )}
+              {isHost && otherLive && (
+                <div className="row wrap" style={{ gap: 10 }}>
+                  <span className="note">Another night is live right now.</span>
+                  {otherLive.groupId === event.groupId && (
+                    <Link href={`/events/${otherLive.id}`} className="btn btn-sm">{otherLive.title} →</Link>
+                  )}
+                </div>
+              )}
             </div>
             <div className="row" style={{ gap: 10 }}>
               <span className="note" style={DEADLINE_STYLE[deadline.kind]}>
@@ -100,8 +110,8 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
               <button
                 type="button"
                 className="btn btn-gold"
-                disabled={!isHost}
-                title={isHost ? "Start the live ceremony" : "Only the host can start"}
+                disabled={!isHost || Boolean(otherLive)}
+                title={!isHost ? "Only the host can start" : otherLive ? "Another night is live" : "Start the live ceremony"}
                 onClick={() => {
                   data.startLiveEvent(event.id);
                   router.push(`/events/${event.id}/tv`);

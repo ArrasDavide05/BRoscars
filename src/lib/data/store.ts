@@ -261,6 +261,8 @@ export const actions = {
   },
 
   async startLiveEvent(eventId: string) {
+    // There is one shared live state: starting over a running night would orphan it.
+    if (findEvent(state.db, eventId)?.status !== "upcoming" || state.live.eventId !== null) return;
     const events = state.db.events.map((e) =>
       e.id === eventId ? { ...e, status: "live" as const } : e
     );

@@ -122,7 +122,7 @@ export function EventCard({ event }: { event: Event }) {
                   </span>
                 ) : (
                   <span className="faint" style={{ fontSize: 12 }}>
-                    {data.getSubmissions(r.id).length} entries
+                    {plural(data.getSubmissions(r.id).length, "clip")}
                   </span>
                 )}
               </div>

@@ -58,6 +58,8 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
   // Not started yet — lobby / start screen.
   if (!isThisLive) {
     const isHost = event.hostId === data.currentUserId;
+    const liveEvent = data.getLiveEvent();
+    const otherLive = liveEvent?.id === event.id ? undefined : liveEvent;
     return (
       <div className="stack" style={{ gap: 20, paddingTop: 24 }}>
         <TvHeader groupName={group?.name} event={event} label="Ready" />
@@ -65,7 +67,14 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
           <div className="spotlight">📺</div>
           <h1 className="tv-title-card">{event.title}</h1>
           <p className="muted">{plural(rounds.length, "round")} · {plural(data.getMembers(event.groupId).length, "player")}</p>
-          {isHost ? (
+          {isHost && otherLive ? (
+            <>
+              <p className="muted">Another night is live right now.</p>
+              {otherLive.groupId === event.groupId && (
+                <Link href={`/events/${otherLive.id}/tv`} className="btn btn-sm">{otherLive.title} →</Link>
+              )}
+            </>
+          ) : isHost ? (
             <button type="button" className="btn btn-gold btn-lg" onClick={() => data.startLiveEvent(event.id)}>
               Start the night ▶
             </button>
