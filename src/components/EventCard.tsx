@@ -4,16 +4,10 @@ import Link from "next/link";
 import { useId, useState } from "react";
 import { useData, type Event } from "@/lib/data";
 import { Avatar } from "./Avatar";
+import { DeadlineLabel } from "./DeadlineLabel";
 import { OscarBadge } from "./OscarBadge";
 import { plural, relativeDays } from "@/lib/domain/format";
-import { deadlineStatus, type DeadlineKind } from "@/lib/domain/deadline";
-
-const DEADLINE_COLOR: Record<DeadlineKind, string | undefined> = {
-  open: undefined,
-  tomorrow: "var(--gold)",
-  today: "var(--gold)",
-  passed: "var(--danger)",
-};
+import { deadlineStatus } from "@/lib/domain/deadline";
 
 const STATUS_META = {
   upcoming: { cls: "open", label: "Upcoming" },
@@ -41,9 +35,7 @@ export function EventCard({ event }: { event: Event }) {
             {deadline && (
               <>
                 {" · "}
-                <span style={{ color: DEADLINE_COLOR[deadline.kind], fontWeight: deadline.kind === "open" ? undefined : 600 }}>
-                  {deadline.label}
-                </span>
+                <DeadlineLabel status={deadline} />
               </>
             )}
           </span>

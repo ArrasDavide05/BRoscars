@@ -69,8 +69,8 @@ Only **F2** (the TV host check) was fixed. The rest are correctly parked until P
 ### Parked product ideas
 
 - **#1 live reactions + hype meter** — in `IDEAS.md`, blocked on Phase B realtime
-- **#2 "The Envelope" reveal + auto-superlatives** — mentioned in `REPORT.md` §6 only, not backlogged
-- **#3 persistent group rivalries** — same, not backlogged
+- ~~**#2 "The Envelope" reveal + auto-superlatives** — mentioned in `REPORT.md` §6 only, not backlogged~~ — ✅ done 2026-11-04: shipped in PRs #3 and #5
+- ~~**#3 persistent group rivalries** — same, not backlogged~~ — ✅ done 2026-11-04: shipped in PR #36
 
 ### Deferred by design (Phase B, needs explicit authorization)
 
@@ -154,4 +154,4 @@ relocate the repo — B is a patch over an environment problem, not a cure.
 
 - Fixing any of the open security findings F1/F3–F8 (they're intentionally Phase B)
 - Anything Supabase (schema SQL, migration, RLS, auth, realtime)
-- Building parked idea #1, or backlogging ideas #2/#3 into `IDEAS.md`
+- Building parked idea #1, or ~~backlogging ideas #2/#3 into `IDEAS.md`~~ — ✅ done 2026-11-04: both shipped (see §2)

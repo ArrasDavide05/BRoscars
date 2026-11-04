@@ -1,5 +1,7 @@
 "use client";
 
+import { secondsLeftLabel } from "@/lib/domain/format";
+
 /** Circular countdown ring for the live 30s timer. */
 export function TimerRing({
   remaining,
@@ -16,7 +18,13 @@ export function TimerRing({
   const secs = Math.max(0, Math.ceil(remaining));
   const color = secs <= 5 ? "var(--danger)" : "var(--gold)";
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      role="img"
+      aria-label={secondsLeftLabel(secs)}
+    >
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--line)" strokeWidth={6} />
       <circle
         cx={size / 2}
