@@ -184,6 +184,17 @@ export const actions = {
     commit({ ...state, db: { ...state.db, submissions: [...state.db.submissions, sub] } });
   },
 
+  /** Pre-event retake: clips are still sealed, so removing one costs the group nothing. */
+  async withdrawSubmission(roundId: string, userId: string) {
+    const round = state.db.rounds.find((r) => r.id === roundId);
+    if (findEvent(state.db, round?.eventId ?? null)?.status !== "upcoming") return;
+    const submissions = state.db.submissions.filter(
+      (s) => !(s.roundId === roundId && s.userId === userId)
+    );
+    if (submissions.length === state.db.submissions.length) return;
+    commit({ ...state, db: { ...state.db, submissions } });
+  },
+
   async createEvent(groupId: string, hostId: string, title: string, promptIds: string[], deadline: number) {
     const eventId = nextId("e");
     const rounds: Round[] = promptIds.map((promptId, i) => ({
