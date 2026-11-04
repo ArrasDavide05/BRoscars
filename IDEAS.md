@@ -22,6 +22,5 @@ the prototype's BroadcastChannel). Not started per owner decision.
 
 ---
 
-Two more ideas from the readiness report (Section 6 of `REPORT.md`), not backlogged here:
-"The Envelope" reveal + auto-superlatives (Low–Medium), and persistent group rivalries /
-career narrative (Low).
+The other two ideas from the readiness report (Section 6 of `REPORT.md`) have shipped:
+"The Envelope" reveal + auto-superlatives (PRs #3, #5) and group rivalries (PR #36).

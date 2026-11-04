@@ -14,6 +14,9 @@ export const signed = (n: number): string => (n > 0 ? `+${n}` : String(n));
 /** "1 crown", "0 crowns", "2 crowns". */
 export const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? "" : "s"}`;
 
+/** Spoken timer text: 30 -> "30 seconds left", 1 -> "1 second left", -2 -> "0 seconds left". */
+export const secondsLeftLabel = (secs: number): string => `${plural(Math.max(0, secs), "second")} left`;
+
 /** Shown on TV, phone and reveal when a round had no submissions. */
 export const NO_ENTRIES_TEXT = "No entries this round";
 

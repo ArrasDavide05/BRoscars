@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ordinal, plural, relativeDays, signed } from "@/lib/domain/format";
+import { ordinal, plural, relativeDays, secondsLeftLabel, signed } from "@/lib/domain/format";
 
 describe("ordinal", () => {
   it.each([
@@ -30,6 +30,18 @@ describe("plural", () => {
   it("only pluralises the last word of a phrase", () => {
     expect(plural(1, "earlier crown")).toBe("1 earlier crown");
     expect(plural(3, "earlier crown")).toBe("3 earlier crowns");
+  });
+});
+
+describe("secondsLeftLabel", () => {
+  it.each([
+    [30, "30 seconds left"],
+    [2, "2 seconds left"],
+    [1, "1 second left"],
+    [0, "0 seconds left"],
+    [-3, "0 seconds left"],
+  ])("%i -> %s", (secs, expected) => {
+    expect(secondsLeftLabel(secs)).toBe(expected);
   });
 });
 

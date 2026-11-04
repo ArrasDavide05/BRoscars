@@ -2,15 +2,9 @@
 
 import Link from "next/link";
 import { useData, type NextUpItem } from "@/lib/data";
+import { DeadlineLabel } from "./DeadlineLabel";
 import { plural } from "@/lib/domain/format";
-import { deadlineStatus, type DeadlineKind } from "@/lib/domain/deadline";
-
-const DEADLINE_COLOR: Record<DeadlineKind, string | undefined> = {
-  open: undefined,
-  tomorrow: "var(--gold)",
-  today: "var(--gold)",
-  passed: "var(--danger)",
-};
+import { deadlineStatus } from "@/lib/domain/deadline";
 
 /** Home: the current user's live and upcoming nights across all their groups. Own count only. */
 export function NextUpPanel() {
@@ -64,9 +58,7 @@ function UpcomingRow({ item }: { item: NextUpItem }) {
       <span className="faint" style={{ fontSize: 13 }}>
         {item.groupName}
         {" · "}
-        <span style={{ color: DEADLINE_COLOR[deadline.kind], fontWeight: deadline.kind === "open" ? undefined : 600 }}>
-          {deadline.label}
-        </span>
+        <DeadlineLabel status={deadline} />
       </span>
       {owed === 0 ? (
         <span className="muted" style={{ fontSize: 13 }}>All your clips are in ✓</span>
