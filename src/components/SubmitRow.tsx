@@ -1,10 +1,57 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useData, type Submission } from "@/lib/data";
 import { Avatar } from "./Avatar";
 import { VideoTile } from "./VideoTile";
 import { VideoModal } from "./VideoModal";
+
+/**
+ * "Retake clip" with an inline confirm that opens on the safe option. Mounted
+ * only while the viewer has a clip and keyed by viewer, so the confirm can't
+ * survive a retake or carry over through the "Viewing as" switcher.
+ */
+function RetakeControl({ onRetake }: { onRetake: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  const retakeRef = useRef<HTMLButtonElement>(null);
+  const keepRef = useRef<HTMLButtonElement>(null);
+  const wasConfirming = useRef(false);
+
+  useEffect(() => {
+    if (confirming) keepRef.current?.focus();
+    else if (wasConfirming.current) retakeRef.current?.focus();
+    wasConfirming.current = confirming;
+  }, [confirming]);
+
+  if (!confirming) {
+    return (
+      <div className="row" style={{ marginTop: 4 }}>
+        <button ref={retakeRef} type="button" className="btn btn-sm btn-ghost" onClick={() => setConfirming(true)}>
+          Retake clip
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="row wrap" role="group" aria-label="Replace this clip?" style={{ gap: 8, marginTop: 4 }}>
+      <span className="muted" style={{ fontSize: 13 }}>Replace this clip?</span>
+      <button ref={keepRef} type="button" className="btn btn-sm btn-ghost" onClick={() => setConfirming(false)}>
+        Keep it
+      </button>
+      <button
+        type="button"
+        className="btn btn-sm btn-ghost"
+        onClick={() => {
+          setConfirming(false);
+          onRetake();
+        }}
+      >
+        Yes, retake
+      </button>
+    </div>
+  );
+}
 
 /**
  * Pre-event round row: collapsed summary that expands (like the results rows)
@@ -25,6 +72,28 @@ export function SubmitRow({ roundId, index }: { roundId: string; index: number }
   const panelId = useId();
   const [caption, setCaption] = useState("");
   const [openSub, setOpenSub] = useState<Submission | null>(null);
+  const captionRef = useRef<HTMLInputElement>(null);
+  const focusCaption = useRef(false);
+
+  // The switcher keeps this row mounted: a prefilled caption is one member's sealed text.
+  useEffect(() => {
+    setCaption("");
+  }, [data.currentUserId]);
+
+  // After a retake the button that had focus is gone; hand it to the submit form.
+  useEffect(() => {
+    if (!mine && focusCaption.current) {
+      focusCaption.current = false;
+      captionRef.current?.focus();
+    }
+  }, [mine]);
+
+  const retake = (clip: Submission) => {
+    focusCaption.current = true;
+    data.withdrawSubmission(roundId, data.currentUserId);
+    setCaption(clip.caption === "My entry" ? "" : clip.caption);
+    setOpenSub(null);
+  };
 
   return (
     <div className="panel pad stack" style={{ gap: 12 }}>
@@ -68,11 +137,15 @@ export function SubmitRow({ roundId, index }: { roundId: string; index: number }
                 <strong style={{ color: "var(--ok)" }}>Your entry ✓</strong>
                 <span className="muted" style={{ fontSize: 13 }}>&ldquo;{mine.caption}&rdquo;</span>
                 <span className="watch-hint">▶ Tap to watch your clip</span>
+                {event.status === "upcoming" && (
+                  <RetakeControl key={data.currentUserId} onRetake={() => retake(mine)} />
+                )}
               </div>
             </div>
           ) : (
             <div className="row wrap" style={{ gap: 8 }}>
               <input
+                ref={captionRef}
                 className="input"
                 style={{ flex: 1, minWidth: 200 }}
                 placeholder="Caption your clip… (recording/upload faked)"

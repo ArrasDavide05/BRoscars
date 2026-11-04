@@ -130,6 +130,7 @@ export interface DataApi {
 
   // mutations (Promise-returning so the surface matches the future Supabase adapter)
   submitVideo: (roundId: string, userId: string, caption: string) => Promise<void>;
+  withdrawSubmission: (roundId: string, userId: string) => Promise<void>;
   createEvent: (groupId: string, hostId: string, title: string, promptIds: string[], deadline: number) => Promise<string>;
   updateProfile: (userId: string, patch: { name?: string; avatarColor?: string }) => Promise<void>;
   /** Creates a group with the creator as sole member; rejects on an invalid name. Resolves to the new group id. */
@@ -281,6 +282,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       },
 
       submitVideo: actions.submitVideo,
+      withdrawSubmission: actions.withdrawSubmission,
       createEvent: actions.createEvent,
       updateProfile: actions.updateProfile,
       createGroup: actions.createGroup,
