@@ -67,6 +67,7 @@ export function SubmitRow({ roundId, index }: { roundId: string; index: number }
   const members = data.getMembers(event.groupId);
   const mine = data.getSubmissionByUser(roundId, data.currentUserId);
   const count = data.getSubmissions(roundId).length;
+  const isMember = members.some((m) => m.id === data.currentUserId);
 
   const [open, setOpen] = useState(false);
   const panelId = useId();
@@ -142,6 +143,8 @@ export function SubmitRow({ roundId, index }: { roundId: string; index: number }
                 )}
               </div>
             </div>
+          ) : !isMember ? (
+            <p className="note">Only members of this group can submit.</p>
           ) : (
             <div className="row wrap" style={{ gap: 8 }}>
               <input
