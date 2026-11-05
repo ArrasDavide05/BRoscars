@@ -8,6 +8,7 @@ import { Avatar } from "@/components/Avatar";
 import { SubmitRow } from "@/components/SubmitRow";
 import { RoundStandings } from "@/components/RoundStandings";
 import { BroscarPanel } from "@/components/BroscarPanel";
+import { CopyResultsButton } from "@/components/CopyResultsButton";
 import { SuperlativesPanel } from "@/components/SuperlativesPanel";
 import { SubmissionProgress } from "@/components/SubmissionProgress";
 import { missingCount } from "@/lib/domain/submission-progress";
@@ -137,6 +138,7 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
       {event.status === "complete" && (
         <div className="stack" style={{ gap: 22 }}>
           <BroscarPanel eventId={event.id} />
+          <CopyResultsButton eventId={event.id} />
           <SuperlativesPanel eventId={event.id} />
           <div className="stack" style={{ gap: 16 }}>
             <div className="section-title">Round by round</div>
