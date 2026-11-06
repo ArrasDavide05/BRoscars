@@ -32,7 +32,7 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
     const rem = ROUND_SECONDS - (Date.now() - (live.videoStartedAt ?? Date.now())) / 1000;
     if ((rs.allRated || rem <= 0) && advanceRef.current !== slot) {
       advanceRef.current = slot;
-      data.advance();
+      data.advance({ roundIndex: live.roundIndex, submissionIndex: live.submissionIndex });
     }
   });
 

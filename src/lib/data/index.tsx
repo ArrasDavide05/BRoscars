@@ -139,7 +139,7 @@ export interface DataApi {
   startLiveEvent: (eventId: string) => Promise<void>;
   castRating: (roundId: string, submissionId: string, raterId: string, value: RatingValue) => Promise<void>;
   castBotRatings: () => Promise<void>;
-  advance: () => Promise<void>;
+  advance: (expected?: { roundIndex: number; submissionIndex: number }) => Promise<void>;
   markRoundRevealed: (eventId: string) => Promise<void>;
 }
 

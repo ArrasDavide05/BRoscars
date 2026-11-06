@@ -127,6 +127,10 @@ function eligibleRaterIds(db: Database, groupId: string, ownerId: string): strin
   return (group?.memberIds ?? []).filter((id) => id !== ownerId);
 }
 
+function isGroupMember(db: Database, groupId: string, userId: string): boolean {
+  return db.groups.find((g) => g.id === groupId)?.memberIds.includes(userId) ?? false;
+}
+
 function finalizeEvent(db: Database, event: Event): Database {
   const rounds = event.roundIds
     .map((rid) => db.rounds.find((r) => r.id === rid))
@@ -168,7 +172,9 @@ function finalizeEvent(db: Database, event: Event): Database {
 export const actions = {
   async submitVideo(roundId: string, userId: string, caption: string) {
     const round = state.db.rounds.find((r) => r.id === roundId);
-    if (!round) return;
+    const event = findEvent(state.db, round?.eventId ?? null);
+    // A late clip would change playOrder under a running round.
+    if (event?.status !== "upcoming" || !isGroupMember(state.db, event.groupId, userId)) return;
     if (state.db.submissions.some((s) => s.roundId === roundId && s.userId === userId)) return;
     const user = state.db.users.find((u) => u.id === userId);
     const sub: Submission = {
@@ -286,6 +292,10 @@ export const actions = {
   async castRating(roundId: string, submissionId: string, raterId: string, value: RatingValue) {
     const sub = state.db.submissions.find((s) => s.id === submissionId);
     if (!sub || sub.userId === raterId) return; // no self-rating
+    const round = state.db.rounds.find((r) => r.id === sub.roundId);
+    const event = findEvent(state.db, round?.eventId ?? null);
+    // Not "must be live": only a finished night is closed to ratings.
+    if (!event || event.status === "complete" || !isGroupMember(state.db, event.groupId, raterId)) return;
     if (state.db.ratings.some((r) => r.submissionId === submissionId && r.raterId === raterId)) return;
     const rating = { id: nextId("rt"), roundId, submissionId, raterId, value };
     commit({ ...state, db: { ...state.db, ratings: [...state.db.ratings, rating] } });
@@ -324,11 +334,24 @@ export const actions = {
     commit({ ...state, live: { ...live, revealedRoundIndex: live.roundIndex } });
   },
 
-  /** Advance the live night one logical step. Driven by the TV. */
-  async advance() {
+  /**
+   * Advance the live night one logical step. Driven by the TV.
+   * `expected` is the video slot the caller evaluated: if the night has moved on
+   * (another tab got there first) nothing happens. The phase counts too, since the
+   * last video and its round results share the same indices.
+   */
+  async advance(expected?: { roundIndex: number; submissionIndex: number }) {
     const { db, live } = state;
     const event = findEvent(db, live.eventId);
     if (!event) return;
+    if (
+      expected &&
+      (live.phase !== "playing" ||
+        live.roundIndex !== expected.roundIndex ||
+        live.submissionIndex !== expected.submissionIndex)
+    ) {
+      return;
+    }
 
     if (live.phase === "round-intro") {
       const round = db.rounds.find((r) => r.id === event.roundIds[live.roundIndex]);

@@ -40,6 +40,7 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
   const rounds = data.getEventRounds(event.id);
   const isHost = event.hostId === data.currentUserId;
   const members = data.getMembers(event.groupId);
+  const isMember = members.some((m) => m.id === data.currentUserId);
 
   const mySubmitted = rounds.filter((r) => data.getSubmissionByUser(r.id, data.currentUserId)).length;
   const myOwed = rounds.length - mySubmitted;
@@ -83,14 +84,23 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
         <div className="stack" style={{ gap: 16 }}>
           <div className="panel pad row between wrap" style={{ gap: 12 }}>
             <div className="stack" style={{ gap: 4 }}>
-              <strong>Your submissions · {mySubmitted}/{rounds.length}</strong>
-              <span className="muted" style={{ fontSize: 13 }}>
-                Submit a clip for each round before the night. You only see your own entries until it goes live.
-              </span>
-              {myOwed > 0 && deadline.kind !== "passed" && (
-                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--gold)" }}>
-                  You still owe {plural(myOwed, "clip")}
-                </span>
+              {isMember ? (
+                <>
+                  <strong>Your submissions · {mySubmitted}/{rounds.length}</strong>
+                  <span className="muted" style={{ fontSize: 13 }}>
+                    Submit a clip for each round before the night. You only see your own entries until it goes live.
+                  </span>
+                  {myOwed > 0 && deadline.kind !== "passed" && (
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "var(--gold)" }}>
+                      You still owe {plural(myOwed, "clip")}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <strong>You&apos;re not in this group</strong>
+                  <span className="muted" style={{ fontSize: 13 }}>Only members of this group can submit.</span>
+                </>
               )}
               {isHost && otherLive && (
                 <div className="row wrap" style={{ gap: 10 }}>

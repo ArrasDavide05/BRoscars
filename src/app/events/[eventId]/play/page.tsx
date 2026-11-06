@@ -44,6 +44,14 @@ export default function PlayPage({ params }: { params: { eventId: string } }) {
     );
   }
 
+  if (!data.getMembers(event.groupId).some((m) => m.id === me.id)) {
+    return (
+      <PhoneFrame {...frame}>
+        <WaitCard icon="🍿" title="You're not in this group" sub="Only members can rate this night." />
+      </PhoneFrame>
+    );
+  }
+
   if (live.phase === "round-intro") {
     return <PhoneFrame {...frame}><WaitCard icon="🎬" title="Get ready" sub={`Round ${live.roundIndex + 1} is about to start.`} /></PhoneFrame>;
   }
