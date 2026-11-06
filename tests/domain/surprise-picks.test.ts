@@ -63,4 +63,55 @@ describe("surprisePicks", () => {
   it("returns no picks for an empty library", () => {
     expect(surprisePicks([], "x")).toEqual({});
   });
+
+  describe("with used prompts", () => {
+    const seeds = ["a", "b", "c", "d", "e", "f", "g", "h"];
+
+    it("an empty used set changes nothing", () => {
+      for (const seed of seeds) {
+        expect(surprisePicks(twenty, seed, 6, new Set())).toEqual(surprisePicks(twenty, seed));
+      }
+    });
+
+    it("takes the unused prompt within a theme", () => {
+      const used = new Set(["a1", "a2", "w2", "w3", "p1"]);
+      for (const seed of seeds) {
+        expect(surprisePicks(small, seed, 3, used)).toEqual({ alcohol: "a3", work: "w1", pets: "p2" });
+      }
+    });
+
+    it("chooses a fully used theme only when there aren't enough fresh ones", () => {
+      const used = new Set(["a1", "a2", "a3"]);
+      for (const seed of seeds) {
+        expect(Object.keys(surprisePicks(small, seed, 2, used)).sort()).toEqual(["pets", "work"]);
+        const all = surprisePicks(small, seed, 3, used);
+        expect(Object.keys(all).sort()).toEqual(["alcohol", "pets", "work"]);
+        expect(used.has(all.work)).toBe(false);
+        expect(used.has(all.pets)).toBe(false);
+      }
+    });
+
+    it("falls back to the theme's normal pick when everything is used", () => {
+      const used = new Set(twenty.flatMap((t) => t.promptIds));
+      for (const seed of seeds) {
+        expect(surprisePicks(twenty, seed, 6, used)).toEqual(surprisePicks(twenty, seed));
+      }
+    });
+
+    it("is deterministic for a seed with a used set", () => {
+      const used = new Set(twenty.slice(0, 10).map((t) => t.promptIds[0]));
+      for (const seed of seeds) {
+        expect(surprisePicks(twenty, seed, 6, used)).toEqual(surprisePicks(twenty, seed, 6, used));
+      }
+    });
+
+    it("never picks a prompt from another theme, even when its own are all used", () => {
+      const used = new Set(twenty.slice(0, 15).flatMap((t) => t.promptIds));
+      for (const seed of seeds) {
+        for (const [themeId, promptId] of Object.entries(surprisePicks(twenty, seed, 20, used))) {
+          expect(twenty.find((t) => t.id === themeId)?.promptIds).toContain(promptId);
+        }
+      }
+    });
+  });
 });
