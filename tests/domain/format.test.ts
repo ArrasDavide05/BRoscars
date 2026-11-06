@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ordinal, plural, relativeDays, secondsLeftLabel, signed } from "@/lib/domain/format";
+import { ordinal, plural, relativeDays, secondsLeftLabel, signed, usedPromptLabel } from "@/lib/domain/format";
 
 describe("ordinal", () => {
   it.each([
@@ -60,5 +60,24 @@ describe("relativeDays", () => {
     [-75 * day, "3 months ago"],
   ])("offset %d -> %s", (offset, expected) => {
     expect(relativeDays(now + offset, now)).toBe(expected);
+  });
+});
+
+describe("usedPromptLabel", () => {
+  const now = Date.UTC(2026, 9, 31, 20);
+  const day = 24 * 60 * 60 * 1000;
+
+  it("says when a played prompt ran", () => {
+    expect(usedPromptLabel({ date: now - 30 * day, played: true }, now)).toBe("Played 1 month ago");
+    expect(usedPromptLabel({ date: now - 3 * day, played: true }, now)).toBe("Played 3 days ago");
+  });
+
+  it("marks a night run before its planned date as played today, not in the future", () => {
+    expect(usedPromptLabel({ date: now + 6 * day, played: true }, now)).toBe("Played today");
+  });
+
+  it("gives no date for a prompt that has not been played yet", () => {
+    expect(usedPromptLabel({ date: now + 7 * day, played: false }, now)).toBe("Already planned");
+    expect(usedPromptLabel({ date: now - day, played: false }, now)).toBe("Already planned");
   });
 });

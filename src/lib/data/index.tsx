@@ -34,6 +34,7 @@ import { findByInviteCode } from "@/lib/domain/invite-code";
 import { completedEventInputs } from "./event-inputs";
 import { completedRivalryInputs } from "./rivalry-inputs";
 import { nextUpInputs } from "./next-up-inputs";
+import { usedPrompts, type UsedPrompt } from "./used-prompts";
 import {
   subscribe,
   getSnapshot,
@@ -57,7 +58,7 @@ import type {
   User,
 } from "./types";
 
-export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress, HallOfFameRow, RaceRow, RivalryResult, RivalryRow, NextUpItem };
+export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress, HallOfFameRow, RaceRow, RivalryResult, RivalryRow, NextUpItem, UsedPrompt };
 export { ROUND_SECONDS };
 
 export type JoinGroupResult =
@@ -102,6 +103,8 @@ export interface DataApi {
   getEvent: (id: string) => Event | undefined;
   /** Live and upcoming nights in the user's groups, with that user's own clips owed. */
   getNextUp: (userId: string) => NextUpItem[];
+  /** promptId -> this group's latest night using it, across all of its nights. */
+  getUsedPrompts: (groupId: string) => Record<string, UsedPrompt>;
   getEventRounds: (eventId: string) => Round[];
   getRound: (roundId: string) => Round | undefined;
   getPromptForRound: (roundId: string) => Prompt | undefined;
@@ -193,6 +196,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         db.events.filter((e) => e.groupId === groupId).sort((a, b) => b.date - a.date),
       getEvent: (id) => db.events.find((e) => e.id === id),
       getNextUp: (userId) => computeNextUp(nextUpInputs(db, userId)),
+      getUsedPrompts: (groupId) => usedPrompts(db, groupId),
       getEventRounds: (eventId) => {
         const ev = db.events.find((e) => e.id === eventId);
         return (ev?.roundIds ?? [])

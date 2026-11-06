@@ -31,3 +31,13 @@ export function relativeDays(ts: number, now: number): string {
   if (ago < 30) return `${plural(ago, "day")} ago`;
   return `${plural(Math.round(ago / 30), "month")} ago`;
 }
+
+/**
+ * Event builder marker for a prompt the group already used: "Played 1 month ago",
+ * "Already planned". A night can be run before its planned date, so a played date
+ * never reads as the future.
+ */
+export function usedPromptLabel(used: { date: number; played: boolean }, now: number): string {
+  if (!used.played) return "Already planned";
+  return `Played ${relativeDays(Math.min(used.date, now), now)}`;
+}

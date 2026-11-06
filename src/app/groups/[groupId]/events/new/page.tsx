@@ -11,7 +11,7 @@ import {
   validateEventDraft,
 } from "@/lib/domain/event-draft";
 import { surprisePicks } from "@/lib/domain/surprise-picks";
-import { plural } from "@/lib/domain/format";
+import { plural, usedPromptLabel } from "@/lib/domain/format";
 
 function defaultDeadline(): string {
   return toDateInputValue(Date.now() + 5 * 24 * 60 * 60 * 1000);
@@ -46,6 +46,7 @@ export default function NewEventPage({ params }: { params: { groupId: string } }
     });
   };
 
+  const used = data.getUsedPrompts(group.id);
   const deadlineMs = deadlineFromDateInput(deadline);
   const draft = validateEventDraft({
     title,
@@ -100,7 +101,7 @@ export default function NewEventPage({ params }: { params: { groupId: string } }
             <button
               type="button"
               className="btn btn-sm btn-ghost"
-              onClick={() => setPicks(surprisePicks(themes, String(Date.now())))}
+              onClick={() => setPicks(surprisePicks(themes, String(Date.now()), 6, new Set(Object.keys(used))))}
             >
               Surprise me 🎲
             </button>
@@ -141,7 +142,14 @@ export default function NewEventPage({ params }: { params: { groupId: string } }
                     aria-pressed={active}
                     onClick={() => toggle(t.id, pid)}
                   >
-                    {prompt?.text}
+                    <span>
+                      {prompt?.text}{" "}
+                      {used[pid] && (
+                        <span style={{ display: "block", fontSize: 11, fontWeight: 600 }}>
+                          {usedPromptLabel(used[pid], Date.now())}
+                        </span>
+                      )}
+                    </span>
                   </button>
                 );
               })}
