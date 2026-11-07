@@ -43,6 +43,7 @@ import {
   playOrder,
   eligibleRaterIds,
   findSubmission,
+  activeNudge,
   ROUND_SECONDS,
 } from "./store";
 import type {
@@ -65,6 +66,13 @@ export type JoinGroupResult =
   | { ok: true; groupId: string }
   | { ok: false; reason: "not-found" }
   | { ok: false; reason: "already-member"; groupId: string };
+
+/** A host nudge that still counts: who sent it and how many clips the member owes. */
+export interface ActiveNudge {
+  fromUserId: string;
+  at: number;
+  clipsOwed: number;
+}
 
 export interface VideoRatingState {
   eligible: string[];
@@ -115,6 +123,8 @@ export interface DataApi {
   getSubmission: (submissionId: string) => Submission | undefined;
   getSubmissionByUser: (roundId: string, userId: string) => Submission | undefined;
   getSubmissionProgress: (eventId: string) => MemberSubmissionProgress[];
+  /** The member's host nudge on an upcoming night; null once they owe no clips. Counts only. */
+  getNudgeFor: (eventId: string, userId: string) => ActiveNudge | null;
   getRoundStandings: (roundId: string) => RoundStanding[];
   getRoundWinnerUserIds: (roundId: string) => string[];
   getMyRating: (submissionId: string, userId: string) => RatingValue | undefined;
@@ -134,6 +144,8 @@ export interface DataApi {
   // mutations (Promise-returning so the surface matches the future Supabase adapter)
   submitVideo: (roundId: string, userId: string, caption: string) => Promise<void>;
   withdrawSubmission: (roundId: string, userId: string) => Promise<void>;
+  /** Host only, upcoming night, member who still owes clips; otherwise a no-op. In memory, nothing is sent. */
+  nudgeMember: (eventId: string, fromUserId: string, toUserId: string) => Promise<void>;
   createEvent: (groupId: string, hostId: string, title: string, promptIds: string[], deadline: number) => Promise<string>;
   updateProfile: (userId: string, patch: { name?: string; avatarColor?: string }) => Promise<void>;
   /** Creates a group with the creator as sole member; rejects on an invalid name. Resolves to the new group id. */
@@ -224,6 +236,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const memberIds = db.groups.find((g) => g.id === ev.groupId)?.memberIds ?? [];
         return submissionProgress(memberIds, ev.roundIds, db.submissions);
       },
+      getNudgeFor: (eventId, userId) => activeNudge(db, eventId, userId),
       getRoundStandings: (roundId) => computeRoundStandings(subsForRound(roundId), ratingsForRound(roundId)),
       getRoundWinnerUserIds: (roundId) => {
         const r = db.rounds.find((x) => x.id === roundId);
@@ -287,6 +300,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
       submitVideo: actions.submitVideo,
       withdrawSubmission: actions.withdrawSubmission,
+      nudgeMember: actions.nudgeMember,
       createEvent: actions.createEvent,
       updateProfile: actions.updateProfile,
       createGroup: actions.createGroup,

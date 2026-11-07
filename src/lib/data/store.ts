@@ -13,6 +13,8 @@ import {
   upvotesByUserFrom,
 } from "@/lib/domain/standings";
 import { generateInviteCode, inviteCodesMatch, validateGroupName } from "@/lib/domain/invite-code";
+import { submissionProgress } from "@/lib/domain/submission-progress";
+import { nudgeIsActive } from "@/lib/domain/nudge";
 import { createSeedDatabase } from "./seed";
 import type {
   Database,
@@ -131,6 +133,28 @@ function isGroupMember(db: Database, groupId: string, userId: string): boolean {
   return db.groups.find((g) => g.id === groupId)?.memberIds.includes(userId) ?? false;
 }
 
+function clipsOwed(db: Database, event: Event, userId: string): number {
+  const [{ submitted, total }] = submissionProgress([userId], event.roundIds, db.submissions);
+  return total - submitted;
+}
+
+/**
+ * The member's nudge for this night while it still counts, else null. Derived at
+ * read time: it drops out once they owe no clips or the night leaves "upcoming".
+ */
+function activeNudge(
+  db: Database,
+  eventId: string,
+  userId: string
+): { fromUserId: string; at: number; clipsOwed: number } | null {
+  const event = findEvent(db, eventId);
+  const nudge = db.nudges.find((n) => n.eventId === eventId && n.toUserId === userId);
+  if (!event || !nudge) return null;
+  const owed = clipsOwed(db, event, userId);
+  if (!nudgeIsActive(event.status, owed)) return null;
+  return { fromUserId: nudge.fromUserId, at: nudge.at, clipsOwed: owed };
+}
+
 function finalizeEvent(db: Database, event: Event): Database {
   const rounds = event.roundIds
     .map((rid) => db.rounds.find((r) => r.id === rid))
@@ -199,6 +223,19 @@ export const actions = {
     );
     if (submissions.length === state.db.submissions.length) return;
     commit({ ...state, db: { ...state.db, submissions } });
+  },
+
+  /** In-memory reminder from the host to a member who still owes clips. Nothing is sent anywhere. */
+  async nudgeMember(eventId: string, fromUserId: string, toUserId: string) {
+    const event = findEvent(state.db, eventId);
+    if (event?.status !== "upcoming" || event.hostId !== fromUserId || toUserId === fromUserId) return;
+    if (!isGroupMember(state.db, event.groupId, toUserId)) return;
+    if (clipsOwed(state.db, event, toUserId) === 0) return;
+    const nudges = [
+      ...state.db.nudges.filter((n) => !(n.eventId === eventId && n.toUserId === toUserId)),
+      { eventId, fromUserId, toUserId, at: Date.now() },
+    ];
+    commit({ ...state, db: { ...state.db, nudges } });
   },
 
   async createEvent(groupId: string, hostId: string, title: string, promptIds: string[], deadline: number) {
@@ -394,4 +431,4 @@ export const actions = {
   },
 };
 
-export { ROUND_SECONDS, eligibleRaterIds, roundSubmissions, findSubmission };
+export { ROUND_SECONDS, eligibleRaterIds, roundSubmissions, findSubmission, activeNudge };

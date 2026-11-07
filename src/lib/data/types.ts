@@ -87,6 +87,14 @@ export interface Rating {
   value: RatingValue; // -1 | 0 | 1
 }
 
+/** Host reminder to a member who still owes clips. One per (event, member); a re-nudge replaces it. */
+export interface Nudge {
+  eventId: string;
+  fromUserId: string;
+  toUserId: string;
+  at: number;
+}
+
 export interface Database {
   users: User[];
   themes: Theme[];
@@ -96,6 +104,7 @@ export interface Database {
   rounds: Round[];
   submissions: Submission[];
   ratings: Rating[];
+  nudges: Nudge[];
 }
 
 export type LivePhase =
