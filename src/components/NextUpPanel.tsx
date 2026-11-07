@@ -5,6 +5,7 @@ import { useData, type NextUpItem } from "@/lib/data";
 import { DeadlineLabel } from "./DeadlineLabel";
 import { plural } from "@/lib/domain/format";
 import { deadlineStatus } from "@/lib/domain/deadline";
+import { nudgeLine } from "@/lib/domain/nudge";
 
 /** Home: the current user's live and upcoming nights across all their groups. Own count only. */
 export function NextUpPanel() {
@@ -49,8 +50,11 @@ function LiveRow({ item }: { item: NextUpItem }) {
 }
 
 function UpcomingRow({ item }: { item: NextUpItem }) {
+  const { currentUserId, getNudgeFor, getUser } = useData();
   const deadline = deadlineStatus(item.deadline, Date.now());
   const owed = item.clipsOwed;
+  const nudge = getNudgeFor(item.eventId, currentUserId);
+  const nudger = nudge ? getUser(nudge.fromUserId) : undefined;
 
   return (
     <Link href={`/events/${item.eventId}`} className="panel pad cardlink stack" style={{ gap: 6 }}>
@@ -68,6 +72,11 @@ function UpcomingRow({ item }: { item: NextUpItem }) {
             You still owe {plural(owed, "clip")}
           </span>
         )
+      )}
+      {nudge && nudger && (
+        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--gold)" }}>
+          {nudgeLine(nudger.name, nudge.clipsOwed)}
+        </span>
       )}
     </Link>
   );

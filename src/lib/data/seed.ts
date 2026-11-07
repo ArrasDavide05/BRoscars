@@ -243,7 +243,7 @@ export function createSeedDatabase(now: number): Database {
     },
   ];
 
-  return { users, themes, prompts, groups, events, rounds, submissions, ratings };
+  return { users, themes, prompts, groups, events, rounds, submissions, ratings, nudges: [] };
 }
 
 function hash(s: string): number {
