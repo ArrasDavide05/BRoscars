@@ -11,22 +11,35 @@ import {
   validateEventDraft,
 } from "@/lib/domain/event-draft";
 import { surprisePicks } from "@/lib/domain/surprise-picks";
+import { PREFILL_COUNT, prefillPicks, prefillSeed, wantsSurprisePrefill } from "@/lib/domain/builder-prefill";
 import { plural, usedPromptLabel } from "@/lib/domain/format";
 
 function defaultDeadline(): string {
   return toDateInputValue(Date.now() + 5 * 24 * 60 * 60 * 1000);
 }
 
-export default function NewEventPage({ params }: { params: { groupId: string } }) {
+export default function NewEventPage({
+  params,
+  searchParams,
+}: {
+  params: { groupId: string };
+  searchParams?: { [k: string]: string | string[] | undefined };
+}) {
   const data = useData();
   const router = useRouter();
   const group = data.getGroup(params.groupId);
   const themes = data.getThemes();
+  const used = data.getUsedPrompts(params.groupId);
+  const prefilled = wantsSurprisePrefill(searchParams?.surprise);
 
   const [title, setTitle] = useState("Friday Night");
   const [deadline, setDeadline] = useState(defaultDeadline());
-  // themeId -> selected promptId
-  const [picks, setPicks] = useState<Record<string, string>>({});
+  // themeId -> selected promptId. "Host the next night" arrives with ?surprise=1
+  // and starts from a Surprise me roll, computed once. The seed is deterministic
+  // (not Date.now()) so the server render and hydration agree on the picks.
+  const [picks, setPicks] = useState<Record<string, string>>(() =>
+    prefillPicks(prefilled, themes, prefillSeed(params.groupId, used), new Set(Object.keys(used)))
+  );
 
   const promptIds = useMemo(
     () => themes.map((t) => picks[t.id]).filter((p): p is string => Boolean(p)),
@@ -46,7 +59,6 @@ export default function NewEventPage({ params }: { params: { groupId: string } }
     });
   };
 
-  const used = data.getUsedPrompts(group.id);
   const deadlineMs = deadlineFromDateInput(deadline);
   const draft = validateEventDraft({
     title,
@@ -78,6 +90,11 @@ export default function NewEventPage({ params }: { params: { groupId: string } }
         <p className="muted" style={{ fontSize: 15 }}>
           Pick one prompt from each theme you want — each pick becomes a round. Aim for ~6.
         </p>
+        {prefilled && (
+          <p className="note">
+            Picked {PREFILL_COUNT} fresh prompts for you. Change anything before you create.
+          </p>
+        )}
       </div>
 
       <div className="panel pad row between wrap" style={{ gap: 12 }}>

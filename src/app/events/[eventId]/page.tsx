@@ -148,7 +148,14 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
       {event.status === "complete" && (
         <div className="stack" style={{ gap: 22 }}>
           <BroscarPanel eventId={event.id} />
-          <CopyResultsButton eventId={event.id} />
+          <div className="row wrap" style={{ gap: 12, justifyContent: "center", alignItems: "flex-start" }}>
+            <CopyResultsButton eventId={event.id} />
+            {isMember && (
+              <Link href={`/groups/${event.groupId}/events/new?surprise=1`} className="btn btn-sm btn-gold">
+                Host the next night →
+              </Link>
+            )}
+          </div>
           <SuperlativesPanel eventId={event.id} />
           <div className="stack" style={{ gap: 16 }}>
             <div className="section-title">Round by round</div>
