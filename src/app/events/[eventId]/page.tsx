@@ -8,6 +8,7 @@ import { Avatar } from "@/components/Avatar";
 import { SubmitRow } from "@/components/SubmitRow";
 import { RoundStandings } from "@/components/RoundStandings";
 import { BroscarPanel } from "@/components/BroscarPanel";
+import { AcceptanceSpeech } from "@/components/AcceptanceSpeech";
 import { CopyResultsButton } from "@/components/CopyResultsButton";
 import { SuperlativesPanel } from "@/components/SuperlativesPanel";
 import { SubmissionProgress } from "@/components/SubmissionProgress";
@@ -148,6 +149,7 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
       {event.status === "complete" && (
         <div className="stack" style={{ gap: 22 }}>
           <BroscarPanel eventId={event.id} />
+          <AcceptanceSpeech eventId={event.id} />
           <div className="row wrap" style={{ gap: 12, justifyContent: "center", alignItems: "flex-start" }}>
             <CopyResultsButton eventId={event.id} />
             {isMember && (

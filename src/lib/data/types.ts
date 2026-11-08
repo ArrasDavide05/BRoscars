@@ -95,6 +95,14 @@ export interface Nudge {
   at: number;
 }
 
+/** A BRoscar winner's one-line acceptance speech. One per (event, winner); a re-save replaces it. */
+export interface Speech {
+  eventId: string;
+  userId: string;
+  text: string;
+  createdAt: number;
+}
+
 export interface Database {
   users: User[];
   themes: Theme[];
@@ -105,6 +113,7 @@ export interface Database {
   submissions: Submission[];
   ratings: Rating[];
   nudges: Nudge[];
+  speeches: Speech[];
 }
 
 export type LivePhase =

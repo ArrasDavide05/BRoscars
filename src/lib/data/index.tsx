@@ -19,7 +19,6 @@ import React, {
 import {
   computeRoundStandings,
   computeRoundWinnerUserIds,
-  computeBroscar,
   upvotesByUserFrom,
   type RoundStanding,
 } from "@/lib/domain/standings";
@@ -44,7 +43,9 @@ import {
   eligibleRaterIds,
   findSubmission,
   activeNudge,
+  broscarUserIds,
   ROUND_SECONDS,
+  type ActiveNudge,
 } from "./store";
 import type {
   CareerBaseline,
@@ -54,25 +55,19 @@ import type {
   Prompt,
   RatingValue,
   Round,
+  Speech,
   Submission,
   Theme,
   User,
 } from "./types";
 
-export type { Event, Group, Prompt, Round, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress, HallOfFameRow, RaceRow, RivalryResult, RivalryRow, NextUpItem, UsedPrompt };
+export type { Event, Group, Prompt, Round, Speech, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress, HallOfFameRow, RaceRow, RivalryResult, RivalryRow, NextUpItem, UsedPrompt, ActiveNudge };
 export { ROUND_SECONDS };
 
 export type JoinGroupResult =
   | { ok: true; groupId: string }
   | { ok: false; reason: "not-found" }
   | { ok: false; reason: "already-member"; groupId: string };
-
-/** A host nudge that still counts: who sent it and how many clips the member owes. */
-export interface ActiveNudge {
-  fromUserId: string;
-  at: number;
-  clipsOwed: number;
-}
 
 export interface VideoRatingState {
   eligible: string[];
@@ -132,6 +127,8 @@ export interface DataApi {
   /** Running crowns/upvotes over the event's first `roundsCompleted` rounds. */
   getRaceStandings: (eventId: string, roundsCompleted: number) => RaceRow[];
   getEventSuperlatives: (eventId: string) => Superlative[];
+  /** BRoscar acceptance speeches for the night, in champion order. Empty if none. */
+  getSpeeches: (eventId: string) => Speech[];
 
   // live
   live: LiveState;
@@ -156,6 +153,8 @@ export interface DataApi {
   castBotRatings: () => Promise<void>;
   advance: (expected?: { roundIndex: number; submissionIndex: number }) => Promise<void>;
   markRoundRevealed: (eventId: string) => Promise<void>;
+  /** BRoscar winner of a complete night only, valid text only; otherwise a no-op. A re-save replaces. */
+  saveSpeech: (eventId: string, userId: string, text: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataApi | null>(null);
@@ -245,16 +244,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       },
       getMyRating: (submissionId, userId) =>
         db.ratings.find((r) => r.submissionId === submissionId && r.raterId === userId)?.value,
-      getBroscarUserIds: (eventId) => {
-        const ev = db.events.find((e) => e.id === eventId);
-        if (!ev) return [];
-        if (ev.status === "complete" && ev.broscarUserIds.length) return ev.broscarUserIds;
-        const rounds = ev.roundIds.map((rid) => db.rounds.find((r) => r.id === rid)).filter((r): r is Round => Boolean(r));
-        const roundWinners = rounds.map((r) => computeRoundWinnerUserIds(subsForRound(r.id), ratingsForRound(r.id)));
-        const eventSubs = db.submissions.filter((s) => rounds.some((r) => r.id === s.roundId));
-        const eventRatings = db.ratings.filter((rt) => rounds.some((r) => r.id === rt.roundId));
-        return computeBroscar(roundWinners, upvotesByUserFrom(eventSubs, eventRatings)).championUserIds;
-      },
+      getBroscarUserIds: (eventId) => broscarUserIds(db, eventId),
       getRaceStandings: (eventId, roundsCompleted) => {
         const ev = db.events.find((e) => e.id === eventId);
         if (!ev) return [];
@@ -272,6 +262,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const eventRatings = db.ratings.filter((rt) => ev.roundIds.includes(rt.roundId));
         return computeSuperlatives(rounds, eventRatings);
       },
+      getSpeeches: (eventId) =>
+        broscarUserIds(db, eventId)
+          .map((uid) => db.speeches.find((s) => s.eventId === eventId && s.userId === uid))
+          .filter((s): s is Speech => Boolean(s)),
 
       live,
       getLiveEvent: () => db.events.find((e) => e.id === live.eventId),
@@ -310,6 +304,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       castBotRatings: actions.castBotRatings,
       advance: actions.advance,
       markRoundRevealed: actions.markRoundRevealed,
+      saveSpeech: actions.saveSpeech,
     };
   }, [db, live, currentUserId]);
 
