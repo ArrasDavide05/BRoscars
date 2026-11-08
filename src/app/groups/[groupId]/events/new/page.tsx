@@ -118,7 +118,7 @@ export default function NewEventPage({
             <button
               type="button"
               className="btn btn-sm btn-ghost"
-              onClick={() => setPicks(surprisePicks(themes, String(Date.now()), 6, new Set(Object.keys(used))))}
+              onClick={() => setPicks(surprisePicks(themes, String(Date.now()), PREFILL_COUNT,new Set(Object.keys(used))))}
             >
               Surprise me 🎲
             </button>

@@ -10,3 +10,12 @@ export function groupRevealSteps<T extends { rank: number }>(rows: readonly T[])
     .sort((a, b) => b[0] - a[0])
     .map(([, group]) => group);
 }
+
+/**
+ * How many reveal steps start uncovered. A round whose reveal already
+ * finished (e.g. on another TV tab) starts fully revealed; otherwise the
+ * envelopes start sealed.
+ */
+export function initialRevealCount(stepCount: number, alreadyRevealed: boolean): number {
+  return alreadyRevealed ? stepCount : 0;
+}

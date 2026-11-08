@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupRevealSteps } from "@/lib/domain/reveal-steps";
+import { groupRevealSteps, initialRevealCount } from "@/lib/domain/reveal-steps";
 
 const row = (id: string, rank: number) => ({ id, rank });
 
@@ -27,5 +27,21 @@ describe("groupRevealSteps", () => {
   it("orders steps by rank even when input is unsorted", () => {
     const steps = groupRevealSteps([row("c", 3), row("a", 1), row("b", 2), row("d", 2)]);
     expect(steps.map((g) => g.map((r) => r.id))).toEqual([["c"], ["b", "d"], ["a"]]);
+  });
+});
+
+describe("initialRevealCount", () => {
+  it("starts sealed when the reveal hasn't finished", () => {
+    expect(initialRevealCount(3, false)).toBe(0);
+  });
+
+  it("starts fully revealed when the reveal already finished", () => {
+    expect(initialRevealCount(3, true)).toBe(3);
+    expect(initialRevealCount(2, true)).toBe(2);
+  });
+
+  it("is 0 with no steps either way", () => {
+    expect(initialRevealCount(0, false)).toBe(0);
+    expect(initialRevealCount(0, true)).toBe(0);
   });
 });
