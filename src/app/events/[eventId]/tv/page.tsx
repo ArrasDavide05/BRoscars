@@ -123,6 +123,8 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
           <RoundReveal
             key={round.id}
             roundId={round.id}
+            // Read once at mount: a tab opened after the reveal shows the podium.
+            alreadyRevealed={live.revealedRoundIndex === live.roundIndex}
             onDone={() => data.markRoundRevealed(event.id)}
           />
           {/* Shared flag: also releases the personal recap on every phone. */}

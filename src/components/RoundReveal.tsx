@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useData, type Submission } from "@/lib/data";
-import { groupRevealSteps } from "@/lib/domain/reveal-steps";
+import { groupRevealSteps, initialRevealCount } from "@/lib/domain/reveal-steps";
 import { NO_ENTRIES_TEXT } from "@/lib/domain/format";
 import { Avatar } from "./Avatar";
 import { VideoModal } from "./VideoModal";
@@ -14,13 +14,26 @@ const STEP_MS = 2000;
 /**
  * TV round results as a suspense reveal: 3rd → 2nd → 1st (ties together),
  * auto-advancing every ~2s or on "Reveal next". Reveal progress is local UI
- * state; remount with `key={roundId}` to reset it.
+ * state; remount with `key={roundId}` to reset it. With `alreadyRevealed`
+ * (read only at mount) it starts fully revealed and doesn't call `onDone`,
+ * so a second or late TV tab shows the podium instead of replaying it.
  */
-export function RoundReveal({ roundId, onDone }: { roundId: string; onDone?: () => void }) {
+export function RoundReveal({
+  roundId,
+  onDone,
+  alreadyRevealed = false,
+}: {
+  roundId: string;
+  onDone?: () => void;
+  alreadyRevealed?: boolean;
+}) {
   const data = useData();
   const standings = data.getRoundStandings(roundId).slice(0, 3);
   const steps = groupRevealSteps(standings);
-  const [revealed, setRevealed] = useState(0);
+  // Initializers run once, so the tab running the reveal isn't affected when
+  // its own onDone flips the shared flag.
+  const [revealed, setRevealed] = useState(() => initialRevealCount(steps.length, alreadyRevealed));
+  const [startedRevealed] = useState(alreadyRevealed);
   const [openSub, setOpenSub] = useState<Submission | null>(null);
   const done = revealed >= steps.length;
 
@@ -34,8 +47,8 @@ export function RoundReveal({ roundId, onDone }: { roundId: string; onDone?: () 
   }, [revealed, done]);
 
   useEffect(() => {
-    if (done) onDoneRef.current?.();
-  }, [done]);
+    if (done && !startedRevealed) onDoneRef.current?.();
+  }, [done, startedRevealed]);
 
   if (steps.length === 0) {
     return <p className="muted" style={{ textAlign: "center" }}>{NO_ENTRIES_TEXT}</p>;
