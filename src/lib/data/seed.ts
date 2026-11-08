@@ -243,7 +243,15 @@ export function createSeedDatabase(now: number): Database {
     },
   ];
 
-  return { users, themes, prompts, groups, events, rounds, submissions, ratings, nudges: [] };
+  // The past night's champion already gave a speech, so the read-only view shows offline.
+  const speeches = pastBroscar.championUserIds.slice(0, 1).map((userId) => ({
+    eventId: pastId,
+    userId,
+    text: "I'd like to thank my phone's front camera and absolutely nobody in this group.",
+    createdAt: now - 30 * DAY,
+  }));
+
+  return { users, themes, prompts, groups, events, rounds, submissions, ratings, nudges: [], speeches };
 }
 
 function hash(s: string): number {

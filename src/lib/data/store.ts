@@ -15,6 +15,7 @@ import {
 import { generateInviteCode, inviteCodesMatch, validateGroupName } from "@/lib/domain/invite-code";
 import { submissionProgress } from "@/lib/domain/submission-progress";
 import { nudgeIsActive } from "@/lib/domain/nudge";
+import { validateSpeech } from "@/lib/domain/speech";
 import { createSeedDatabase } from "./seed";
 import type {
   Database,
@@ -138,15 +139,34 @@ function clipsOwed(db: Database, event: Event, userId: string): number {
   return total - submitted;
 }
 
+/** A host nudge that still counts: who sent it and how many clips the member owes. */
+export interface ActiveNudge {
+  fromUserId: string;
+  at: number;
+  clipsOwed: number;
+}
+
+/**
+ * The night's champions: frozen on a complete event, else computed from the
+ * ratings so far. Shared by the read API and the speech guard.
+ */
+function broscarUserIds(db: Database, eventId: string): string[] {
+  const ev = findEvent(db, eventId);
+  if (!ev) return [];
+  if (ev.status === "complete" && ev.broscarUserIds.length) return ev.broscarUserIds;
+  const rounds = ev.roundIds.map((rid) => db.rounds.find((r) => r.id === rid)).filter((r): r is Round => Boolean(r));
+  const ratingsFor = (roundId: string) => db.ratings.filter((rt) => rt.roundId === roundId);
+  const roundWinners = rounds.map((r) => computeRoundWinnerUserIds(roundSubmissions(db, r.id), ratingsFor(r.id)));
+  const eventSubs = db.submissions.filter((s) => rounds.some((r) => r.id === s.roundId));
+  const eventRatings = db.ratings.filter((rt) => rounds.some((r) => r.id === rt.roundId));
+  return computeBroscar(roundWinners, upvotesByUserFrom(eventSubs, eventRatings)).championUserIds;
+}
+
 /**
  * The member's nudge for this night while it still counts, else null. Derived at
  * read time: it drops out once they owe no clips or the night leaves "upcoming".
  */
-function activeNudge(
-  db: Database,
-  eventId: string,
-  userId: string
-): { fromUserId: string; at: number; clipsOwed: number } | null {
+function activeNudge(db: Database, eventId: string, userId: string): ActiveNudge | null {
   const event = findEvent(db, eventId);
   const nudge = db.nudges.find((n) => n.eventId === eventId && n.toUserId === userId);
   if (!event || !nudge) return null;
@@ -236,6 +256,19 @@ export const actions = {
       { eventId, fromUserId, toUserId, at: Date.now() },
     ];
     commit({ ...state, db: { ...state.db, nudges } });
+  },
+
+  /** A BRoscar winner's one-line speech for a complete night. A re-save replaces theirs. */
+  async saveSpeech(eventId: string, userId: string, text: string) {
+    if (findEvent(state.db, eventId)?.status !== "complete") return;
+    if (!broscarUserIds(state.db, eventId).includes(userId)) return;
+    const result = validateSpeech(text);
+    if (!result.ok) return;
+    const speeches = [
+      ...state.db.speeches.filter((s) => !(s.eventId === eventId && s.userId === userId)),
+      { eventId, userId, text: result.text, createdAt: Date.now() },
+    ];
+    commit({ ...state, db: { ...state.db, speeches } });
   },
 
   async createEvent(groupId: string, hostId: string, title: string, promptIds: string[], deadline: number) {
@@ -431,4 +464,4 @@ export const actions = {
   },
 };
 
-export { ROUND_SECONDS, eligibleRaterIds, roundSubmissions, findSubmission, activeNudge };
+export { ROUND_SECONDS, eligibleRaterIds, roundSubmissions, findSubmission, activeNudge, broscarUserIds };
