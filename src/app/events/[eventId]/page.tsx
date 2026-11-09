@@ -10,6 +10,7 @@ import { RoundStandings } from "@/components/RoundStandings";
 import { BroscarPanel } from "@/components/BroscarPanel";
 import { AcceptanceSpeech } from "@/components/AcceptanceSpeech";
 import { CopyResultsButton } from "@/components/CopyResultsButton";
+import { WinnersReel } from "@/components/WinnersReel";
 import { SuperlativesPanel } from "@/components/SuperlativesPanel";
 import { SubmissionProgress } from "@/components/SubmissionProgress";
 import { missingCount } from "@/lib/domain/submission-progress";
@@ -152,6 +153,7 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
           <AcceptanceSpeech eventId={event.id} />
           <div className="row wrap" style={{ gap: 12, justifyContent: "center", alignItems: "flex-start" }}>
             <CopyResultsButton eventId={event.id} />
+            <WinnersReel eventId={event.id} />
             {isMember && (
               <Link href={`/groups/${event.groupId}/events/new?surprise=1`} className="btn btn-sm btn-gold">
                 Host the next night →
