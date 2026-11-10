@@ -2,6 +2,7 @@
 
 import { useData } from "@/lib/data";
 import { Avatar } from "@/components/Avatar";
+import { BroscarPrediction } from "@/components/BroscarPrediction";
 import { nudgeLine } from "@/lib/domain/nudge";
 
 /** Pre-event lobby: each member's clip count. Counts only; other entries stay sealed. */
@@ -62,6 +63,7 @@ export function SubmissionProgress({ eventId }: { eventId: string }) {
           );
         })}
       </div>
+      <BroscarPrediction eventId={eventId} />
     </div>
   );
 }

@@ -30,6 +30,7 @@ import { computeRaceStandings, type RaceRow } from "@/lib/domain/race";
 import { computeRivalries, type RivalryResult, type RivalryRow } from "@/lib/domain/rivalries";
 import { computeNextUp, type NextUpItem } from "@/lib/domain/next-up";
 import { findByInviteCode } from "@/lib/domain/invite-code";
+import { pickOf, whoCalledIt } from "@/lib/domain/predictions";
 import { completedEventInputs } from "./event-inputs";
 import { completedRivalryInputs } from "./rivalry-inputs";
 import { nextUpInputs } from "./next-up-inputs";
@@ -129,6 +130,13 @@ export interface DataApi {
   getEventSuperlatives: (eventId: string) => Superlative[];
   /** BRoscar acceptance speeches for the night, in champion order. Empty if none. */
   getSpeeches: (eventId: string) => Speech[];
+  /** The user's own BRoscar pick for the night (a user id), or undefined. Never someone else's. */
+  getMyPrediction: (eventId: string, userId: string) => string | undefined;
+  /**
+   * Members whose pick was a BRoscar winner, in pick order. Null while the night is
+   * upcoming (picks stay private) or when nobody picked at all.
+   */
+  getWhoCalledIt: (eventId: string) => string[] | null;
 
   // live
   live: LiveState;
@@ -155,6 +163,8 @@ export interface DataApi {
   markRoundRevealed: (eventId: string) => Promise<void>;
   /** BRoscar winner of a complete night only, valid text only; otherwise a no-op. A re-save replaces. */
   saveSpeech: (eventId: string, userId: string, text: string) => Promise<void>;
+  /** Group member, upcoming night, pick a group member (self allowed); otherwise a no-op. A re-pick replaces. */
+  predictBroscar: (eventId: string, userId: string, pickedUserId: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataApi | null>(null);
@@ -266,6 +276,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         broscarUserIds(db, eventId)
           .map((uid) => db.speeches.find((s) => s.eventId === eventId && s.userId === uid))
           .filter((s): s is Speech => Boolean(s)),
+      getMyPrediction: (eventId, userId) =>
+        pickOf(db.predictions.filter((p) => p.eventId === eventId), userId),
+      // Real build: an RPC that only returns this once the night has started.
+      getWhoCalledIt: (eventId) => {
+        const ev = db.events.find((e) => e.id === eventId);
+        const picks = db.predictions.filter((p) => p.eventId === eventId);
+        if (!ev || ev.status === "upcoming" || picks.length === 0) return null;
+        return whoCalledIt(picks, broscarUserIds(db, eventId));
+      },
 
       live,
       getLiveEvent: () => db.events.find((e) => e.id === live.eventId),
@@ -305,6 +324,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       advance: actions.advance,
       markRoundRevealed: actions.markRoundRevealed,
       saveSpeech: actions.saveSpeech,
+      predictBroscar: actions.predictBroscar,
     };
   }, [db, live, currentUserId]);
 

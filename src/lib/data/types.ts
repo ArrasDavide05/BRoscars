@@ -103,6 +103,13 @@ export interface Speech {
   createdAt: number;
 }
 
+/** A member's guess at the night's BRoscar winner. One per (event, member); a re-pick replaces it. */
+export interface Prediction {
+  eventId: string;
+  userId: string;
+  pickedUserId: string;
+}
+
 export interface Database {
   users: User[];
   themes: Theme[];
@@ -114,6 +121,7 @@ export interface Database {
   ratings: Rating[];
   nudges: Nudge[];
   speeches: Speech[];
+  predictions: Prediction[];
 }
 
 export type LivePhase =
