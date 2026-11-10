@@ -1,6 +1,5 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useData } from "@/lib/data";
@@ -13,16 +12,10 @@ import { CopyResultsButton } from "@/components/CopyResultsButton";
 import { WinnersReel } from "@/components/WinnersReel";
 import { SuperlativesPanel } from "@/components/SuperlativesPanel";
 import { SubmissionProgress } from "@/components/SubmissionProgress";
+import { DeadlineLabel } from "@/components/DeadlineLabel";
 import { missingCount } from "@/lib/domain/submission-progress";
 import { plural } from "@/lib/domain/format";
-import { deadlineStatus, type DeadlineKind } from "@/lib/domain/deadline";
-
-const DEADLINE_STYLE: Record<DeadlineKind, CSSProperties | undefined> = {
-  open: undefined,
-  tomorrow: { color: "var(--gold)", borderColor: "var(--gold-deep)" },
-  today: { color: "var(--gold)", borderColor: "var(--gold)", fontWeight: 700 },
-  passed: { color: "var(--danger)", borderColor: "var(--danger)" },
-};
+import { deadlineStatus } from "@/lib/domain/deadline";
 
 export default function EventPage({ params }: { params: { eventId: string } }) {
   const data = useData();
@@ -114,8 +107,8 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
               )}
             </div>
             <div className="row" style={{ gap: 10 }}>
-              <span className="note" style={DEADLINE_STYLE[deadline.kind]}>
-                {deadline.label} · {new Date(event.deadline).toLocaleDateString()}
+              <span className="note">
+                <DeadlineLabel status={deadline} /> · {new Date(event.deadline).toLocaleDateString()}
               </span>
               <span className="muted" style={{ fontSize: 13, color: missing === 0 ? "var(--gold)" : undefined }}>
                 {missing === 0 ? "Everyone's in ✓" : `${plural(missing, "member")} still missing clips`}
