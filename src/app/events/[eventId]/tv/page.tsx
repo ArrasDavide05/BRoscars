@@ -12,6 +12,7 @@ import { SuperlativesPanel } from "@/components/SuperlativesPanel";
 import { RaceScoreboard } from "@/components/RaceScoreboard";
 import { useTick } from "@/components/useTick";
 import { NO_ENTRIES_TEXT, plural } from "@/lib/domain/format";
+import { nominees } from "@/lib/domain/nominees";
 
 export default function TvPage({ params }: { params: { eventId: string } }) {
   const data = useData();
@@ -106,6 +107,7 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
           <span className="eyebrow">Round {roundNo} · {theme?.name}</span>
           <h1 className="tv-title-card">{prompt?.text}</h1>
           {roundIsEmpty && <p className="muted">{NO_ENTRIES_TEXT}</p>}
+          {round && !roundIsEmpty && <NomineesStrip groupId={event.groupId} roundId={round.id} />}
           <button type="button" className="btn btn-gold btn-lg" onClick={() => data.advance()}>
             {roundIsEmpty ? "Skip round ▶" : "Start round ▶"}
           </button>
@@ -177,6 +179,28 @@ function TvHeader({
         </div>
       </div>
       <span className="badge revealed">{label}</span>
+    </div>
+  );
+}
+
+// Round intro: who entered this round. Clips, captions and play order stay hidden.
+function NomineesStrip({ groupId, roundId }: { groupId: string; roundId: string }) {
+  const data = useData();
+  const ids = nominees(data.getMembers(groupId).map((m) => m.id), data.getSubmissions(roundId));
+  const users = ids.map((id) => data.getUser(id)).filter((u): u is NonNullable<typeof u> => Boolean(u));
+  if (users.length === 0) return null;
+  const names = users.map((u) => u.name);
+  return (
+    <div className="stack" style={{ gap: 10, alignItems: "center" }} role="group" aria-label={`Nominees: ${names.join(", ")}`}>
+      <span className="eyebrow">The nominees are…</span>
+      <div className="row wrap" style={{ gap: 18, justifyContent: "center" }}>
+        {users.map((u) => (
+          <div key={u.id} className="row" style={{ gap: 8 }}>
+            <Avatar user={u} size={34} />
+            <strong style={{ fontSize: 18 }}>{u.name}</strong>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
