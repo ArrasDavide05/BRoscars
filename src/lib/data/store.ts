@@ -271,6 +271,19 @@ export const actions = {
     commit({ ...state, db: { ...state.db, speeches } });
   },
 
+  /** A member's BRoscar guess for an upcoming night. Locks once the night starts; a re-pick replaces. */
+  async predictBroscar(eventId: string, userId: string, pickedUserId: string) {
+    const event = findEvent(state.db, eventId);
+    if (event?.status !== "upcoming") return;
+    if (!isGroupMember(state.db, event.groupId, userId) || !isGroupMember(state.db, event.groupId, pickedUserId)) return;
+    const existing = state.db.predictions.find((p) => p.eventId === eventId && p.userId === userId);
+    if (existing?.pickedUserId === pickedUserId) return;
+    const predictions = existing
+      ? state.db.predictions.map((p) => (p === existing ? { ...p, pickedUserId } : p))
+      : [...state.db.predictions, { eventId, userId, pickedUserId }];
+    commit({ ...state, db: { ...state.db, predictions } });
+  },
+
   async createEvent(groupId: string, hostId: string, title: string, promptIds: string[], deadline: number) {
     const eventId = nextId("e");
     const rounds: Round[] = promptIds.map((promptId, i) => ({

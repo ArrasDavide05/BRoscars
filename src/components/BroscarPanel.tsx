@@ -2,6 +2,7 @@
 
 import { useData } from "@/lib/data";
 import { plural } from "@/lib/domain/format";
+import { calledItLine } from "@/lib/domain/predictions";
 import { Avatar } from "./Avatar";
 import { OscarBadge } from "./OscarBadge";
 
@@ -13,6 +14,7 @@ export function BroscarPanel({ eventId }: { eventId: string }) {
 
   const rounds = data.getEventRounds(eventId);
   const champions = data.getBroscarUserIds(eventId);
+  const calledIt = data.getWhoCalledIt(eventId);
 
   // rounds won per member
   const wonBy: Record<string, number> = {};
@@ -45,6 +47,11 @@ export function BroscarPanel({ eventId }: { eventId: string }) {
         <p className="muted" style={{ marginTop: 14 }}>
           Won {champions.length ? wonBy[champions[0]] : 0} of {plural(rounds.length, "round")}.
         </p>
+        {calledIt && (
+          <p style={{ marginTop: 6, fontSize: 14, fontWeight: 600, color: calledIt.length ? "var(--gold)" : undefined }} className={calledIt.length ? "" : "muted"}>
+            {calledItLine(calledIt.map((id) => data.getUser(id)?.name ?? "Unknown"))}
+          </p>
+        )}
       </div>
 
       <div className="stack" style={{ gap: 8 }}>

@@ -251,7 +251,17 @@ export function createSeedDatabase(now: number): Database {
     createdAt: now - 30 * DAY,
   }));
 
-  return { users, themes, prompts, groups, events, rounds, submissions, ratings, nudges: [], speeches };
+  // BRoscar picks: on the past night Dana called it and Eli didn't; on the upcoming
+  // night Bella has picked (hidden from the default viewer, Alex).
+  const pastChamp = pastBroscar.championUserIds[0];
+  const pastMiss = memberIds.find((id) => !pastBroscar.championUserIds.includes(id))!;
+  const predictions = [
+    { eventId: pastId, userId: "u_dana", pickedUserId: pastChamp },
+    { eventId: pastId, userId: "u_eli", pickedUserId: pastMiss },
+    { eventId: preId, userId: "u_bella", pickedUserId: "u_chris" },
+  ];
+
+  return { users, themes, prompts, groups, events, rounds, submissions, ratings, nudges: [], speeches, predictions };
 }
 
 function hash(s: string): number {
