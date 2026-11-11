@@ -834,3 +834,37 @@ h3 {
     animation: none;
   }
 }
+
+/* ---------- TV lobby: tonight's categories ---------- */
+.tv-lineup {
+  width: min(860px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tv-lineup ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 6px 14px;
+  text-align: left;
+}
+.tv-lineup li {
+  font-size: 14px;
+  line-height: 1.35;
+  padding: 8px 12px;
+  border-left: 2px solid var(--gold-deep);
+  background: rgba(228, 176, 74, 0.05);
+  border-radius: 0 8px 8px 0;
+}
+.tv-lineup-no {
+  color: var(--gold);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.tv-lineup-theme {
+  color: var(--gold-soft);
+  font-weight: 700;
+}
