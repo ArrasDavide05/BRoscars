@@ -48,7 +48,7 @@ export function BroscarPanel({ eventId }: { eventId: string }) {
           Won {champions.length ? wonBy[champions[0]] : 0} of {plural(rounds.length, "round")}.
         </p>
         {calledIt && (
-          <p style={{ marginTop: 6, fontSize: 14, fontWeight: 600, color: calledIt.length ? "var(--gold)" : undefined }} className={calledIt.length ? "" : "muted"}>
+          <p style={{ marginTop: 6, fontSize: 14, fontWeight: 600, color: calledIt.length ? "var(--gold)" : undefined }} className={calledIt.length ? undefined : "muted"}>
             {calledItLine(calledIt.map((id) => data.getUser(id)?.name ?? "Unknown"))}
           </p>
         )}
