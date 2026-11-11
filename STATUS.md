@@ -11,9 +11,9 @@ Sources: `WORKLOG.md`, `REPORT.md`, `IDEAS.md`, `CLAUDE.md`, plus live verificat
 > built on Linux by the daily swarm, so history lives in `git log` / PRs. The caveat below
 > describes the 2026-08-05 state and is kept for the record.
 
-**This project is not under version control.** There is no `.git` anywhere in
+~~**This project is not under version control.** There is no `.git` anywhere in
 `E:\Claude_agent` or `E:\Claude_agent\Version_1.0v`, so `git log` / `git status` /
-`gh issue|pr list` produced nothing. Everything below was reconstructed from the
+`gh issue|pr list` produced nothing.~~ — ✅ resolved 2026-10-29 (see the update above). Everything below was reconstructed from the
 markdown artifacts the last session left behind and from re-running the toolchain.
 
 ---
@@ -100,9 +100,9 @@ upload/storage, and the async read conversion (issue A — that conversion *is* 
 | **Env vars** | ✅ N/A — no `.env`, no `.env.example`, and none needed. The prototype is fully offline by design (`CLAUDE.md`: no network calls, no external services) |
 | **Database / migrations** | ✅ N/A — no `supabase/` directory, no `.sql` files anywhere. Phase B never started. Nothing unapplied |
 | **Typecheck** (`npx tsc --noEmit`) | ✅ exit 0 |
-| **Tests** (`npm test`) | ✅ **8 files, 50 tests, all passing** in 3.03s |
+| **Tests** (`npm test`) | ✅ ~~**8 files, 50 tests, all passing** in 3.03s~~ — ✅ 2026-11-11: **50 files, 385 tests, all passing** |
 | **Dev server** (`npm run dev`) | ✅ **Comes up clean** — ready in 2.4s on `http://localhost:3000`. All 8 routes compile and return 200 |
-| **Build** (`npm run build`) | ❌ **FAILS** on the exFAT `E:` drive — see below. ✅ **2026-10-21: passes on Linux** (swarm worktree), confirming the failure is environment-specific |
+| **Build** (`npm run build`) | ~~❌ **FAILS** on the exFAT `E:` drive — see below~~ — ✅ 2026-11-11: **passes on Linux** (swarm worktree, every daily run since 2026-10-21); the failure was exFAT-specific |
 
 ### Routes verified live (all 200)
 
@@ -110,6 +110,10 @@ upload/storage, and the async read conversion (issue A — that conversion *is* 
 `/events/e_pre` · `/groups/g_crew/events/new` · `/events/e_live/tv` · `/events/e_live/play`
 
 ### The build failure
+
+> ✅ **Resolved 2026-11-11:** the repo is built on Linux by the daily swarm and `next build`
+> passes there. The exFAT analysis below is kept for the record (it still applies if the
+> owner builds from the `E:` drive).
 
 ```
 Error: EISDIR: illegal operation on a directory, readlink
@@ -140,11 +144,13 @@ The same root cause shows up non-fatally in dev as:
 
 | # | Fix | Effort | Why |
 |---|---|---|---|
-| **A** | **Move the project to an NTFS drive** (e.g. `C:\dev\broscars`), reinstall `node_modules` there | Medium | Real fix. Restores `next build`, the webpack cache, and symlink semantics generally. Also makes `git init` behave normally |
-| **B** | **Set `webpack: (c) => { c.resolve.symlinks = false; return c }` in `next.config.mjs`** | Tiny | Workaround that stops webpack calling `readlink` at all. Unblocks the build in place, on exFAT. Doesn't fix the pack-cache warning |
-| **C** | **`git init` + initial commit** | Tiny | There is no version control at all right now. Six code fixes and a 50-test suite exist only as loose files. `.gitignore` is already correct |
-| **D** | **Delete the 7 zero-byte junk files** in the project root | Trivial | Shell-redirect debris |
+| ~~**A**~~ | ~~**Move the project to an NTFS drive** (e.g. `C:\dev\broscars`), reinstall `node_modules` there~~ — ✅ superseded 2026-11-11: the repo is now built on Linux, where `next build` passes (still relevant only if the owner builds from `E:`) | Medium | Real fix. Restores `next build`, the webpack cache, and symlink semantics generally. Also makes `git init` behave normally |
+| ~~**B**~~ | ~~**Set `webpack: (c) => { c.resolve.symlinks = false; return c }` in `next.config.mjs`**~~ — ✅ not needed 2026-11-11: the build passes on Linux without it | Tiny | Workaround that stops webpack calling `readlink` at all. Unblocks the build in place, on exFAT. Doesn't fix the pack-cache warning |
+| ~~**C**~~ | ~~**`git init` + initial commit**~~ — ✅ done 2026-11-11: the repo is on git/GitHub (`ArrasDavide05/BRoscars`) since 2026-10-29 | Tiny | There is no version control at all right now. Six code fixes and a 50-test suite exist only as loose files. `.gitignore` is already correct |
+| ~~**D**~~ | ~~**Delete the 7 zero-byte junk files** in the project root~~ — ✅ done 2026-10-21 (see §3) | Trivial | Shell-redirect debris |
 | **E** | **`npm prune`** to drop `vite-tsconfig-paths` / `tsconfck` / `globrex` | Trivial | Not in `package.json`; unused since the plugin approach was dropped |
+
+> **Update 2026-11-11:** A–D are resolved; only **E** (`npm prune`) is still open — the owner's call.
 
 **Recommended order:** C first (get history before touching anything), then B for an
 immediate green build, then D and E. Treat A as the proper fix when you're ready to

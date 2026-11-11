@@ -254,7 +254,8 @@ export function createSeedDatabase(now: number): Database {
   // BRoscar picks: on the past night Dana called it and Eli didn't; on the upcoming
   // night Bella has picked (hidden from the default viewer, Alex).
   const pastChamp = pastBroscar.championUserIds[0];
-  const pastMiss = memberIds.find((id) => !pastBroscar.championUserIds.includes(id))!;
+  const pastMiss = memberIds.find((id) => !pastBroscar.championUserIds.includes(id));
+  if (!pastMiss) throw new Error("seed: e_past needs at least one member who is not a BRoscar winner");
   const predictions = [
     { eventId: pastId, userId: "u_dana", pickedUserId: pastChamp },
     { eventId: pastId, userId: "u_eli", pickedUserId: pastMiss },
