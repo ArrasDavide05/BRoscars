@@ -13,6 +13,7 @@ import { RaceScoreboard } from "@/components/RaceScoreboard";
 import { useTick } from "@/components/useTick";
 import { NO_ENTRIES_TEXT, plural } from "@/lib/domain/format";
 import { nominees } from "@/lib/domain/nominees";
+import { buildLineup } from "@/lib/domain/lineup";
 
 export default function TvPage({ params }: { params: { eventId: string } }) {
   const data = useData();
@@ -61,6 +62,7 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
     const isHost = event.hostId === data.currentUserId;
     const liveEvent = data.getLiveEvent();
     const otherLive = liveEvent?.id === event.id ? undefined : liveEvent;
+    const lineup = buildLineup(rounds, data.getThemeForRound, data.getPromptForRound);
     return (
       <div className="stack" style={{ gap: 20, paddingTop: 24 }}>
         <TvHeader groupName={group?.name} event={event} label="Ready" />
@@ -68,6 +70,18 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
           <div className="spotlight">📺</div>
           <h1 className="tv-title-card">{event.title}</h1>
           <p className="muted">{plural(rounds.length, "round")} · {plural(data.getMembers(event.groupId).length, "player")}</p>
+          {lineup.length > 0 && (
+            <section className="tv-lineup" aria-labelledby="tv-lineup-title">
+              <h2 id="tv-lineup-title" className="section-title">Tonight&apos;s categories</h2>
+              <ol>
+                {lineup.map((e) => (
+                  <li key={e.roundId}>
+                    <span className="tv-lineup-no">Round {e.roundNo}</span> · <span className="tv-lineup-theme">{e.themeName}</span> · {e.promptText}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
           {isHost && otherLive ? (
             <>
               <p className="muted">Another night is live right now.</p>
