@@ -2,10 +2,17 @@
 // People's Champion = most total upvotes across the event (ties -> all tied).
 // Most Divisive = submission with the highest min(up, down); needs up>=1 and down>=1.
 // Robbed = non-winning submission closest to its round's top net score.
-// Output order is fixed: peoples-champion, most-divisive, robbed. No UI text here.
+// On a roll = longest run of consecutive round wins (rounds in array order; co-winners
+// all extend their streak; empty rounds break it). Needs >= 2; ties -> all tied.
+// Output order is fixed: peoples-champion, most-divisive, robbed, on-a-roll. No UI text here.
 
 import type { RatingLike } from "./scoring";
-import { computeRoundStandings, upvotesByUserFrom, type SubmissionLike } from "./standings";
+import {
+  computeRoundStandings,
+  computeRoundWinnerUserIds,
+  upvotesByUserFrom,
+  type SubmissionLike,
+} from "./standings";
 
 export type Superlative =
   | { kind: "peoples-champion"; userIds: string[]; detail: { up: number } }
@@ -22,7 +29,8 @@ export type Superlative =
       submissionId: string;
       roundId: string;
       detail: { up: number; down: number; net: number; gap: number };
-    };
+    }
+  | { kind: "on-a-roll"; userIds: string[]; detail: { streak: number } };
 
 export type SuperlativeKind = Superlative["kind"];
 
@@ -93,6 +101,25 @@ export function computeSuperlatives(
       roundId: robbed.roundId,
       detail: { up: robbed.up, down: robbed.down, net: robbed.net, gap: robbed.gap },
     });
+  }
+
+  // On a roll
+  const current: Record<string, number> = {};
+  const best: Record<string, number> = {};
+  for (const r of rounds) {
+    const winners = new Set(computeRoundWinnerUserIds(r.submissions, ratings));
+    for (const u of Object.keys(current)) if (!winners.has(u)) current[u] = 0;
+    for (const u of winners) {
+      current[u] = (current[u] ?? 0) + 1;
+      best[u] = Math.max(best[u] ?? 0, current[u]);
+    }
+  }
+  const maxStreak = Math.max(0, ...Object.values(best));
+  if (maxStreak >= 2) {
+    const userIds = Object.keys(best)
+      .filter((u) => best[u] === maxStreak)
+      .sort();
+    out.push({ kind: "on-a-roll", userIds, detail: { streak: maxStreak } });
   }
 
   return out;

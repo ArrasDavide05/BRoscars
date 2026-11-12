@@ -8,12 +8,14 @@ const ICON: Record<Superlative["kind"], string> = {
   "peoples-champion": "🗳️",
   "most-divisive": "⚖️",
   robbed: "😤",
+  "on-a-roll": "🔥",
 };
 
 const TITLE: Record<Superlative["kind"], string> = {
   "peoples-champion": "People's Champion",
   "most-divisive": "Most Divisive",
   robbed: "Robbed",
+  "on-a-roll": "On a roll",
 };
 
 /** Auto-computed fun awards shown under the Broscar. Renders nothing if none apply. */
@@ -30,6 +32,7 @@ export function SuperlativesPanel({ eventId }: { eventId: string }) {
         const names = users.map((u) => u.name).join(" & ");
         let line: string | undefined;
         let score: string;
+        let label: string | undefined;
         switch (a.kind) {
           case "peoples-champion":
             score = plural(a.detail.up, "upvote");
@@ -46,10 +49,14 @@ export function SuperlativesPanel({ eventId }: { eventId: string }) {
             score = `by ${a.detail.gap}`;
             break;
           }
+          case "on-a-roll":
+            score = `${a.detail.streak} in a row`;
+            label = `${TITLE[a.kind]}: ${names}, ${a.detail.streak} rounds in a row`;
+            break;
         }
 
         return (
-          <div key={a.kind} className="standing-row">
+          <div key={a.kind} className="standing-row" role={label ? "group" : undefined} aria-label={label}>
             <span style={{ fontSize: 22, width: 30 }} aria-hidden>{ICON[a.kind]}</span>
             <AvatarStack users={users} size={34} />
             <div className="stack" style={{ gap: 2, flex: 1, minWidth: 0 }}>

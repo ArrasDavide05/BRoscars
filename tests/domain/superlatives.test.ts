@@ -118,6 +118,56 @@ describe("computeSuperlatives", () => {
     expect(allTied.some((s) => s.kind === "robbed")).toBe(false);
   });
 
+  describe("On a roll", () => {
+    // round(n, ...userIds) -> one submission per user, id `${user}${n}`
+    const round = (n: number, ...userIds: string[]) => ({
+      roundId: `r${n}`,
+      submissions: userIds.map((u) => sub(`${u}${n}`, u)),
+    });
+    const onARoll = (rounds: ReturnType<typeof round>[], ratings: ReturnType<typeof r>) =>
+      computeSuperlatives(rounds, ratings).find((s) => s.kind === "on-a-roll");
+
+    it("is omitted when every round has a different winner", () => {
+      const rounds = [round(1, "ann", "ben", "cat"), round(2, "ann", "ben", "cat"), round(3, "ann", "ben", "cat")];
+      const ratings = [...r("ann1", 1), ...r("ben2", 1), ...r("cat3", 1)];
+      expect(onARoll(rounds, ratings)).toBeUndefined();
+    });
+
+    it("awards a 2-round streak, pushed last", () => {
+      const rounds = [round(1, "ann", "ben"), round(2, "ann", "ben"), round(3, "ann", "ben")];
+      const ratings = [...r("ben1", 1), ...r("ann2", 1), ...r("ann3", 1)];
+      const out = computeSuperlatives(rounds, ratings);
+      expect(out[out.length - 1]).toEqual({ kind: "on-a-roll", userIds: ["ann"], detail: { streak: 2 } });
+    });
+
+    it("a 3-streak beats a 2-streak", () => {
+      const rounds = [1, 2, 3, 4, 5].map((n) => round(n, "ann", "ben"));
+      // ben r1-r2, ann r3-r5
+      const ratings = [...r("ben1", 1), ...r("ben2", 1), ...r("ann3", 1), ...r("ann4", 1), ...r("ann5", 1)];
+      expect(onARoll(rounds, ratings)).toMatchObject({ userIds: ["ann"], detail: { streak: 3 } });
+    });
+
+    it("lists every holder of equal longest streaks, sorted", () => {
+      const rounds = [1, 2, 3, 4].map((n) => round(n, "ann", "ben"));
+      // ben r1-r2, ann r3-r4
+      const ratings = [...r("ben1", 1), ...r("ben2", 1), ...r("ann3", 1), ...r("ann4", 1)];
+      expect(onARoll(rounds, ratings)).toMatchObject({ userIds: ["ann", "ben"], detail: { streak: 2 } });
+    });
+
+    it("a co-win keeps a streak alive", () => {
+      const rounds = [1, 2, 3].map((n) => round(n, "ann", "ben", "cat"));
+      // ann wins r1, ties ben in r2, wins r3
+      const ratings = [...r("ann1", 1), ...r("ann2", 1), ...r("ben2", 1), ...r("ann3", 1)];
+      expect(onARoll(rounds, ratings)).toMatchObject({ userIds: ["ann"], detail: { streak: 3 } });
+    });
+
+    it("an empty round breaks a streak", () => {
+      const rounds = [round(1, "ann", "ben"), round(2), round(3, "ann", "ben")];
+      const ratings = [...r("ann1", 1), ...r("ann3", 1)];
+      expect(onARoll(rounds, ratings)).toBeUndefined();
+    });
+  });
+
   it("detail is typed per kind (narrowing on kind exposes down / gap)", () => {
     const rounds = [{ roundId: "r1", submissions: [sub("a1", "ann"), sub("b1", "ben")] }];
     const out = computeSuperlatives(rounds, [...r("a1", 1, 1, 1), ...r("b1", 1, 1, -1)]);
@@ -137,6 +187,9 @@ describe("computeSuperlatives", () => {
           expect(s.roundId).toBe("r1");
           expect(s.detail).toEqual({ up: 2, down: 1, net: 1, gap: 2 });
           seen.push(`${s.kind}:${s.detail.gap}`);
+          break;
+        case "on-a-roll":
+          seen.push(`${s.kind}:${s.detail.streak}`);
           break;
       }
     }
