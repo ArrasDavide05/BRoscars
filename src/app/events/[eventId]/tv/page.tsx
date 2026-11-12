@@ -13,7 +13,7 @@ import { RaceScoreboard } from "@/components/RaceScoreboard";
 import { useTick } from "@/components/useTick";
 import { NO_ENTRIES_TEXT, plural } from "@/lib/domain/format";
 import { nominees } from "@/lib/domain/nominees";
-import { buildLineup } from "@/lib/domain/lineup";
+import { buildLineup, UNKNOWN_PROMPT, UNKNOWN_THEME } from "@/lib/domain/lineup";
 
 export default function TvPage({ params }: { params: { eventId: string } }) {
   const data = useData();
@@ -103,8 +103,8 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
   }
 
   const round = data.getCurrentRound();
-  const theme = round ? data.getThemeForRound(round.id) : undefined;
-  const prompt = round ? data.getPromptForRound(round.id) : undefined;
+  const themeName = (round && data.getThemeForRound(round.id)?.name) || UNKNOWN_THEME;
+  const promptText = (round && data.getPromptForRound(round.id)?.text) || UNKNOWN_PROMPT;
   const roundNo = live.roundIndex + 1;
   const roundIsEmpty = !round || data.getPlayOrder(round.id).length === 0;
 
@@ -113,13 +113,13 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
       <TvHeader
         groupName={group?.name}
         event={event}
-        label={`Round ${roundNo}/${rounds.length} · ${theme?.name ?? ""}`}
+        label={`Round ${roundNo}/${rounds.length} · ${themeName}`}
       />
 
       {live.phase === "round-intro" && (
         <div className="tv-stage">
-          <span className="eyebrow">Round {roundNo} · {theme?.name}</span>
-          <h1 className="tv-title-card">{prompt?.text}</h1>
+          <span className="eyebrow">Round {roundNo} · {themeName}</span>
+          <h1 className="tv-title-card">{promptText}</h1>
           {roundIsEmpty && <p className="muted">{NO_ENTRIES_TEXT}</p>}
           {round && !roundIsEmpty && <NomineesStrip groupId={event.groupId} roundId={round.id} />}
           <button type="button" className="btn btn-gold btn-lg" onClick={() => data.advance()}>
@@ -134,7 +134,7 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
         <div className="stack" style={{ gap: 16 }}>
           <div className="tv-stage" style={{ minHeight: "auto", gap: 8 }}>
             <span className="eyebrow">Round {roundNo} results</span>
-            <h2 style={{ fontSize: 28 }}>{prompt?.text}</h2>
+            <h2 style={{ fontSize: 28 }}>{promptText}</h2>
           </div>
           <RoundReveal
             key={round.id}
@@ -236,7 +236,7 @@ function PlayingStage({ roundId, mounted }: { roundId: string; mounted: boolean 
   const order = data.getPlayOrder(roundId);
   const sub = order[live.submissionIndex];
   if (!sub) return <EmptyPlayingStage />;
-  const uploader = data.getUser(sub.userId)!;
+  const uploader = data.getUser(sub.userId);
   const rs = data.getVideoRatingState(sub.id);
   const remaining = mounted
     ? ROUND_SECONDS - (Date.now() - (live.videoStartedAt ?? Date.now())) / 1000
@@ -258,8 +258,8 @@ function PlayingStage({ roundId, mounted }: { roundId: string; mounted: boolean 
       </div>
 
       <div className="row" style={{ gap: 10 }}>
-        <Avatar user={uploader} size={34} />
-        <strong style={{ fontSize: 18 }}>{uploader.name}</strong>
+        {uploader && <Avatar user={uploader} size={34} />}
+        <strong style={{ fontSize: 18 }}>{uploader?.name ?? "Unknown player"}</strong>
       </div>
       <div className="subcard-caption" style={{ fontSize: 16 }}>&ldquo;{sub.caption}&rdquo;</div>
 

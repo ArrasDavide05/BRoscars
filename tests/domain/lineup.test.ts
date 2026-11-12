@@ -50,6 +50,15 @@ describe("buildLineup", () => {
     expect(lineup[1]).toEqual({ roundId: "ghost", roundNo: 2, themeName: UNKNOWN_THEME, promptText: UNKNOWN_PROMPT });
   });
 
+  it("treats an empty theme name or prompt text as missing", () => {
+    const lineup = buildLineup(
+      [{ id: "blank", roundOrder: 0 }],
+      () => ({ name: "" }),
+      () => ({ text: "" }),
+    );
+    expect(lineup).toEqual([{ roundId: "blank", roundNo: 1, themeName: UNKNOWN_THEME, promptText: UNKNOWN_PROMPT }]);
+  });
+
   it("numbers rounds 1..n even when roundOrder has gaps", () => {
     const rounds = [
       { id: "r2", roundOrder: 5 },

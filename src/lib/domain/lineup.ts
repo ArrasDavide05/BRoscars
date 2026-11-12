@@ -19,6 +19,7 @@ export function buildLineup(
 ): LineupEntry[] {
   return [...rounds]
     .sort((a, b) => a.roundOrder - b.roundOrder)
+    // `||` (not `??`) on purpose: an empty name/text gets the placeholder too.
     .map((r, i) => ({
       roundId: r.id,
       roundNo: i + 1,
