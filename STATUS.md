@@ -100,7 +100,7 @@ upload/storage, and the async read conversion (issue A — that conversion *is* 
 | **Env vars** | ✅ N/A — no `.env`, no `.env.example`, and none needed. The prototype is fully offline by design (`CLAUDE.md`: no network calls, no external services) |
 | **Database / migrations** | ✅ N/A — no `supabase/` directory, no `.sql` files anywhere. Phase B never started. Nothing unapplied |
 | **Typecheck** (`npx tsc --noEmit`) | ✅ exit 0 |
-| **Tests** (`npm test`) | ✅ ~~**8 files, 50 tests, all passing** in 3.03s~~ — ✅ 2026-11-11: **50 files, 385 tests, all passing** |
+| **Tests** (`npm test`) | ✅ ~~**8 files, 50 tests, all passing** in 3.03s~~ — ✅ 2026-11-11: **50 files, 385 tests, all passing** — ✅ 2026-11-12: **51 files, 391 tests, all passing** |
 | **Dev server** (`npm run dev`) | ✅ **Comes up clean** — ready in 2.4s on `http://localhost:3000`. All 8 routes compile and return 200 |
 | **Build** (`npm run build`) | ~~❌ **FAILS** on the exFAT `E:` drive — see below~~ — ✅ 2026-11-11: **passes on Linux** (swarm worktree, every daily run since 2026-10-21); the failure was exFAT-specific |
 
@@ -155,6 +155,8 @@ The same root cause shows up non-fatally in dev as:
 **Recommended order:** C first (get history before touching anything), then B for an
 immediate green build, then D and E. Treat A as the proper fix when you're ready to
 relocate the repo — B is a patch over an environment problem, not a cure.
+
+> **Superseded 2026-11-12:** A–D are done or no longer needed; only **E** (`npm prune`) is left, for the owner.
 
 ### Not proposed yet — say the word
 
