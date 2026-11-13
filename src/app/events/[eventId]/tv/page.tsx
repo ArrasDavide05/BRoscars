@@ -4,16 +4,17 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { useData, ROUND_SECONDS } from "@/lib/data";
 import { Avatar } from "@/components/Avatar";
-import { TimerRing } from "@/components/TimerRing";
-import { RaterStrip } from "@/components/RaterStrip";
 import { RoundReveal } from "@/components/RoundReveal";
 import { BroscarPanel } from "@/components/BroscarPanel";
 import { SuperlativesPanel } from "@/components/SuperlativesPanel";
 import { RaceScoreboard } from "@/components/RaceScoreboard";
+import { TvHeader } from "@/components/TvHeader";
+import { TvLobby } from "@/components/TvLobby";
+import { EmptyPlayingStage, PlayingStage } from "@/components/TvPlayingStage";
 import { useTick } from "@/components/useTick";
-import { NO_ENTRIES_TEXT, plural } from "@/lib/domain/format";
+import { NO_ENTRIES_TEXT } from "@/lib/domain/format";
 import { nominees } from "@/lib/domain/nominees";
-import { buildLineup, UNKNOWN_PROMPT, UNKNOWN_THEME } from "@/lib/domain/lineup";
+import { UNKNOWN_PROMPT, UNKNOWN_THEME } from "@/lib/domain/lineup";
 
 export default function TvPage({ params }: { params: { eventId: string } }) {
   const data = useData();
@@ -59,47 +60,7 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
 
   // Not started yet — lobby / start screen.
   if (!isThisLive) {
-    const isHost = event.hostId === data.currentUserId;
-    const liveEvent = data.getLiveEvent();
-    const otherLive = liveEvent?.id === event.id ? undefined : liveEvent;
-    const lineup = buildLineup(rounds, data.getThemeForRound, data.getPromptForRound);
-    return (
-      <div className="stack" style={{ gap: 20, paddingTop: 24 }}>
-        <TvHeader groupName={group?.name} event={event} label="Ready" />
-        <div className="tv-stage">
-          <div className="spotlight">📺</div>
-          <h1 className="tv-title-card">{event.title}</h1>
-          <p className="muted">{plural(rounds.length, "round")} · {plural(data.getMembers(event.groupId).length, "player")}</p>
-          {lineup.length > 0 && (
-            <section className="tv-lineup" aria-labelledby="tv-lineup-title">
-              <h2 id="tv-lineup-title" className="section-title">Tonight&apos;s categories</h2>
-              <ol>
-                {lineup.map((e) => (
-                  <li key={e.roundId}>
-                    <span className="tv-lineup-no">Round {e.roundNo}</span> · <span className="tv-lineup-theme">{e.themeName}</span> · {e.promptText}
-                  </li>
-                ))}
-              </ol>
-            </section>
-          )}
-          {isHost && otherLive ? (
-            <>
-              <p className="muted">Another night is live right now.</p>
-              {otherLive.groupId === event.groupId && (
-                <Link href={`/events/${otherLive.id}/tv`} className="btn btn-sm">{otherLive.title} →</Link>
-              )}
-            </>
-          ) : isHost ? (
-            <button type="button" className="btn btn-gold btn-lg" onClick={() => data.startLiveEvent(event.id)}>
-              Start the night ▶
-            </button>
-          ) : (
-            <p className="muted">Waiting for the host to start the night.</p>
-          )}
-          <p className="note">Open <code>/events/{event.id}/play</code> in another tab to rate from a phone.</p>
-        </div>
-      </div>
-    );
+    return <TvLobby eventId={event.id} />;
   }
 
   const round = data.getCurrentRound();
@@ -172,31 +133,6 @@ export default function TvPage({ params }: { params: { eventId: string } }) {
   );
 }
 
-function TvHeader({
-  groupName,
-  event,
-  label,
-}: {
-  groupName?: string;
-  event: { title: string; date: number };
-  label: string;
-}) {
-  return (
-    <div className="tv-bar">
-      <div className="row" style={{ gap: 10 }}>
-        <span className="brand-mark">🏆</span>
-        <div className="stack" style={{ gap: 2 }}>
-          <strong>{groupName}</strong>
-          <span className="faint" style={{ fontSize: 12 }}>
-            {event.title} · {new Date(event.date).toLocaleDateString()}
-          </span>
-        </div>
-      </div>
-      <span className="badge revealed">{label}</span>
-    </div>
-  );
-}
-
 // Round intro: who entered this round. Clips, captions and play order stay hidden.
 function NomineesStrip({ groupId, roundId }: { groupId: string; roundId: string }) {
   const data = useData();
@@ -215,63 +151,6 @@ function NomineesStrip({ groupId, roundId }: { groupId: string; roundId: string 
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-// Defensive: "playing" with nothing to play would otherwise leave the TV blank and stuck.
-function EmptyPlayingStage() {
-  const data = useData();
-  return (
-    <div className="tv-stage">
-      <p className="muted">{NO_ENTRIES_TEXT}</p>
-      <button type="button" className="btn btn-gold btn-lg" onClick={() => data.advance()}>Skip round ▶</button>
-    </div>
-  );
-}
-
-function PlayingStage({ roundId, mounted }: { roundId: string; mounted: boolean }) {
-  const data = useData();
-  const live = data.live;
-  const order = data.getPlayOrder(roundId);
-  const sub = order[live.submissionIndex];
-  if (!sub) return <EmptyPlayingStage />;
-  const uploader = data.getUser(sub.userId);
-  const rs = data.getVideoRatingState(sub.id);
-  const remaining = mounted
-    ? ROUND_SECONDS - (Date.now() - (live.videoStartedAt ?? Date.now())) / 1000
-    : ROUND_SECONDS;
-
-  return (
-    <div className="tv-stage" style={{ gap: 14 }}>
-      <span className="faint" style={{ fontSize: 13 }}>
-        Video {live.submissionIndex + 1} of {order.length}
-      </span>
-      <div
-        className="tv-video"
-        style={{ background: `linear-gradient(150deg, ${sub.tileFrom}, ${sub.tileTo})` }}
-      >
-        <div className="tile-play" aria-hidden>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-        </div>
-        <span className="tile-dur">0:{String(sub.durationSec).padStart(2, "0")}</span>
-      </div>
-
-      <div className="row" style={{ gap: 10 }}>
-        {uploader && <Avatar user={uploader} size={34} />}
-        <strong style={{ fontSize: 18 }}>{uploader?.name ?? "Unknown player"}</strong>
-      </div>
-      <div className="subcard-caption" style={{ fontSize: 16 }}>&ldquo;{sub.caption}&rdquo;</div>
-
-      <TimerRing remaining={remaining} total={ROUND_SECONDS} />
-      <RaterStrip eligible={rs.eligible} ratedBy={rs.ratedBy} />
-      <div className="muted">{rs.ratedBy.length} / {plural(rs.eligible.length, "player")} rated</div>
-
-      <div className="row" style={{ gap: 10 }}>
-        <button type="button" className="btn btn-sm" onClick={() => data.castBotRatings()}>🤖 Cast bot ratings</button>
-        <button type="button" className="btn btn-sm btn-ghost" onClick={() => data.advance()}>Skip ⏭</button>
-      </div>
-      <p className="note">Ratings are hidden until the round ends.</p>
     </div>
   );
 }
