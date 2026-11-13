@@ -2,6 +2,7 @@
 
 import { useData } from "@/lib/data";
 import { nightSummaryText } from "@/lib/domain/night-summary";
+import { SUPERLATIVE_ICON, SUPERLATIVE_TITLE, superlativeSummaryDetail } from "@/lib/domain/superlative-labels";
 import { useCopyText } from "./useCopyText";
 
 /** Copies a plain-text summary of a finished night, for the group chat. */
@@ -23,6 +24,18 @@ export function CopyResultsButton({ eventId }: { eventId: string }) {
           promptText: data.getPromptForRound(r.id)?.text ?? "",
           winnerNames: names(data.getRoundWinnerUserIds(r.id)),
         })),
+        awards: data.getEventSuperlatives(eventId).flatMap((s) => {
+          const awardNames = s.userIds.flatMap((id) => data.getUser(id)?.name ?? []);
+          if (awardNames.length === 0) return [];
+          return [
+            {
+              icon: SUPERLATIVE_ICON[s.kind],
+              title: SUPERLATIVE_TITLE[s.kind],
+              names: awardNames,
+              detail: superlativeSummaryDetail(s),
+            },
+          ];
+        }),
       })
     );
 

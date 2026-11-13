@@ -1,22 +1,9 @@
 "use client";
 
-import { useData, type Superlative, type User } from "@/lib/data";
+import { useData, type User } from "@/lib/data";
 import { plural } from "@/lib/domain/format";
+import { SUPERLATIVE_ICON as ICON, SUPERLATIVE_TITLE as TITLE } from "@/lib/domain/superlative-labels";
 import { AvatarStack } from "./Avatar";
-
-const ICON: Record<Superlative["kind"], string> = {
-  "peoples-champion": "🗳️",
-  "most-divisive": "⚖️",
-  robbed: "😤",
-  "on-a-roll": "🔥",
-};
-
-const TITLE: Record<Superlative["kind"], string> = {
-  "peoples-champion": "People's Champion",
-  "most-divisive": "Most Divisive",
-  robbed: "Robbed",
-  "on-a-roll": "On a roll",
-};
 
 /** Auto-computed fun awards shown under the Broscar. Renders nothing if none apply. */
 export function SuperlativesPanel({ eventId }: { eventId: string }) {

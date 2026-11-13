@@ -59,6 +59,36 @@ describe("nightSummaryText", () => {
     expect(lines(night({ rounds: [round, round, round] }))[1]).toBe("Friday Night Crew · 3 rounds");
   });
 
+  it("leaves the text unchanged with no awards or an empty list", () => {
+    expect(nightSummaryText(night({ awards: [] }))).toBe(nightSummaryText(night()));
+  });
+
+  it("adds one line per award after all the round lines", () => {
+    const awards = [
+      { icon: "🗳️", title: "People's Champion", names: ["Dana Kim"], detail: "7 upvotes" },
+      { icon: "😤", title: "Robbed", names: ["Alex Rivera"], detail: "lost by 1" },
+    ];
+    expect(lines(night({ awards }))).toEqual([
+      "🏆 October Wrap",
+      "Friday Night Crew · 2 rounds",
+      "BRoscar: Bella Chen",
+      "1. Best drunk video: 👑 Alex Rivera",
+      "2. Work incident: 👑 Bella Chen",
+      "🗳️ People's Champion: Dana Kim (7 upvotes)",
+      "😤 Robbed: Alex Rivera (lost by 1)",
+    ]);
+  });
+
+  it("joins the names of a tied award", () => {
+    const awards = [{ icon: "🔥", title: "On a roll", names: ["Dana", "Sam"], detail: "2 in a row" }];
+    expect(lines(night({ awards })).at(-1)).toBe("🔥 On a roll: Dana & Sam (2 in a row)");
+  });
+
+  it("drops the parentheses when an award has no detail", () => {
+    const awards = [{ icon: "⚖️", title: "Most Divisive", names: ["Dana"], detail: "" }];
+    expect(lines(night({ awards })).at(-1)).toBe("⚖️ Most Divisive: Dana");
+  });
+
   it("has no blank lines, even with no rounds", () => {
     expect(lines(night()).every(Boolean)).toBe(true);
     expect(nightSummaryText(night({ rounds: [] }))).toBe(
