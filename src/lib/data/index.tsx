@@ -64,6 +64,7 @@ import type {
 
 export type { Event, Group, Prompt, Round, Speech, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress, HallOfFameRow, RaceRow, RivalryResult, RivalryRow, NextUpItem, UsedPrompt, ActiveNudge };
 export { ROUND_SECONDS };
+export { UNKNOWN_MEMBER_NAME, placeholderUser } from "./placeholder-user";
 
 export type JoinGroupResult =
   | { ok: true; groupId: string }

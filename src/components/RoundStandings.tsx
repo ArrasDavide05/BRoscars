@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useData, type Submission } from "@/lib/data";
+import { placeholderUser, useData, type Submission } from "@/lib/data";
 import { Avatar } from "./Avatar";
 import { VideoModal } from "./VideoModal";
 
@@ -19,7 +19,7 @@ export function RoundStandings({ roundId, limit = 3 }: { roundId: string; limit?
   return (
     <div className="stack" style={{ gap: 10 }}>
       {standings.map((s, i) => {
-        const u = data.getUser(s.userId)!;
+        const u = data.getUser(s.userId) ?? placeholderUser(s.userId);
         const sub = data.getSubmission(s.submissionId) ?? null;
         return (
           <button

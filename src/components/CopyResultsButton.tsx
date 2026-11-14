@@ -1,6 +1,6 @@
 "use client";
 
-import { useData } from "@/lib/data";
+import { UNKNOWN_MEMBER_NAME, useData } from "@/lib/data";
 import { nightSummaryText } from "@/lib/domain/night-summary";
 import { SUPERLATIVE_ICON, SUPERLATIVE_TITLE, superlativeSummaryDetail } from "@/lib/domain/superlative-labels";
 import { useCopyText } from "./useCopyText";
@@ -12,7 +12,7 @@ export function CopyResultsButton({ eventId }: { eventId: string }) {
   const event = data.getEvent(eventId);
   if (!event) return null;
 
-  const names = (userIds: string[]) => userIds.map((id) => data.getUser(id)!.name);
+  const names = (userIds: string[]) => userIds.map((id) => data.getUser(id)?.name ?? UNKNOWN_MEMBER_NAME);
 
   const copyResults = () =>
     copy(

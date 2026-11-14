@@ -1,6 +1,6 @@
 "use client";
 
-import { useData } from "@/lib/data";
+import { placeholderUser, useData } from "@/lib/data";
 import { plural } from "@/lib/domain/format";
 import { calledItLine } from "@/lib/domain/predictions";
 import { Avatar } from "./Avatar";
@@ -34,7 +34,7 @@ export function BroscarPanel({ eventId }: { eventId: string }) {
         <div className="spotlight" aria-hidden style={{ marginTop: 8 }}>🏆</div>
         <div className="row" style={{ justifyContent: "center", gap: 28, marginTop: 14, flexWrap: "wrap" }}>
           {champions.map((id) => {
-            const u = data.getUser(id)!;
+            const u = data.getUser(id) ?? placeholderUser(id);
             return (
               <div key={id} className="stack" style={{ alignItems: "center", gap: 8 }}>
                 <Avatar user={u} size={76} />
@@ -57,7 +57,7 @@ export function BroscarPanel({ eventId }: { eventId: string }) {
       <div className="stack" style={{ gap: 8 }}>
         <div className="section-title">Rounds won</div>
         {board.map((row) => {
-          const u = data.getUser(row.userId)!;
+          const u = data.getUser(row.userId) ?? placeholderUser(row.userId);
           return (
             <div key={row.userId} className="standing-row">
               <Avatar user={u} size={34} />
