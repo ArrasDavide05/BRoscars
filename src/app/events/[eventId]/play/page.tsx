@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useData, ROUND_SECONDS } from "@/lib/data";
+import { placeholderUser, useData, ROUND_SECONDS } from "@/lib/data";
 import type { User } from "@/lib/data";
 import { Avatar } from "@/components/Avatar";
 import { TimerRing } from "@/components/TimerRing";
@@ -75,7 +75,7 @@ export default function PlayPage({ params }: { params: { eventId: string } }) {
     return <PhoneFrame {...frame}><WaitCard icon="🎬" title={NO_ENTRIES_TEXT} sub="Nothing to rate. Watch the TV for the next round." /></PhoneFrame>;
   }
 
-  const uploader = data.getUser(sub.userId)!;
+  const uploader = data.getUser(sub.userId) ?? placeholderUser(sub.userId);
   const isMine = sub.userId === me.id;
   const myRating = data.getMyRating(sub.id, me.id);
   const remaining = mounted

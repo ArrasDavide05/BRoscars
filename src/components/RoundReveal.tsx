@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useData, type Submission } from "@/lib/data";
+import { placeholderUser, useData, type Submission } from "@/lib/data";
 import { groupRevealSteps, initialRevealCount } from "@/lib/domain/reveal-steps";
 import { NO_ENTRIES_TEXT } from "@/lib/domain/format";
 import { Avatar } from "./Avatar";
@@ -83,7 +83,7 @@ export function RoundReveal({
             </div>
           );
         }
-        const u = data.getUser(s.userId)!;
+        const u = data.getUser(s.userId) ?? placeholderUser(s.userId);
         const sub = data.getSubmission(s.submissionId) ?? null;
         return (
           <button

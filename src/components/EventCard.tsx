@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useId, useState } from "react";
-import { useData, type Event } from "@/lib/data";
+import { placeholderUser, useData, type Event } from "@/lib/data";
 import { Avatar } from "./Avatar";
 import { DeadlineLabel } from "./DeadlineLabel";
 import { OscarBadge } from "./OscarBadge";
@@ -46,7 +46,7 @@ export function EventCard({ event }: { event: Event }) {
             <div className="row" style={{ gap: 8 }}>
               <OscarBadge label="BRoscar" />
               {broscar.map((id) => {
-                const u = data.getUser(id)!;
+                const u = data.getUser(id) ?? placeholderUser(id);
                 return (
                   <span key={id} className="row" style={{ gap: 6 }}>
                     <Avatar user={u} size={24} />
@@ -108,7 +108,7 @@ export function EventCard({ event }: { event: Event }) {
                   <span className="row" style={{ gap: 6 }}>
                     <span aria-hidden>👑</span>
                     {winners.map((id) => {
-                      const u = data.getUser(id)!;
+                      const u = data.getUser(id) ?? placeholderUser(id);
                       return <Avatar key={id} user={u} size={22} />;
                     })}
                   </span>
