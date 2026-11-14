@@ -11,6 +11,7 @@ import { AcceptanceSpeech } from "@/components/AcceptanceSpeech";
 import { CopyResultsButton } from "@/components/CopyResultsButton";
 import { WinnersReel } from "@/components/WinnersReel";
 import { SuperlativesPanel } from "@/components/SuperlativesPanel";
+import { PersonalBests } from "@/components/PersonalBests";
 import { SubmissionProgress } from "@/components/SubmissionProgress";
 import { DeadlineLabel } from "@/components/DeadlineLabel";
 import { missingCount } from "@/lib/domain/submission-progress";
@@ -154,6 +155,7 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
             )}
           </div>
           <SuperlativesPanel eventId={event.id} />
+          <PersonalBests eventId={event.id} />
           <div className="stack" style={{ gap: 16 }}>
             <div className="section-title">Round by round</div>
             {rounds.map((r, i) => {
