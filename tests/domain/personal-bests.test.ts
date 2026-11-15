@@ -29,6 +29,14 @@ describe("computePersonalBests", () => {
   it("leaves out users with no entries", () => {
     const out = computePersonalBests([[e("s1", "ana", 0, 2)], [e("s2", "ana", 1, 0)]]);
     expect(out.map((r) => r.userId)).toEqual(["ana"]);
+
+    // ben entered round 0 only, cat entered nothing: ben keeps his single entry, cat gets no row.
+    const mixed = computePersonalBests([[e("s1", "ana", 0, 2), e("s3", "ben", 0, -1)], [e("s2", "ana", 1, 0)]]);
+    expect(mixed).toEqual([
+      { userId: "ana", submissionId: "s1", roundId: "r0", net: 2 },
+      { userId: "ben", submissionId: "s3", roundId: "r0", net: -1 },
+    ]);
+    expect(mixed.some((r) => r.userId === "cat")).toBe(false);
   });
 
   it("breaks a tie inside one user's entries by earlier round, then lower submission id", () => {
