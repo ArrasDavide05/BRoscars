@@ -1,6 +1,6 @@
 "use client";
 
-import { useData } from "@/lib/data";
+import { placeholderUser, useData } from "@/lib/data";
 import { signed } from "@/lib/domain/format";
 import { computePersonalBests } from "@/lib/domain/personal-bests";
 import { Avatar } from "./Avatar";
@@ -25,8 +25,7 @@ export function PersonalBests({ eventId }: { eventId: string }) {
     <div className="stack" style={{ gap: 8 }}>
       <div className="section-title">Everyone&apos;s best clip</div>
       {bests.map((b) => {
-        const u = data.getUser(b.userId);
-        if (!u) return null;
+        const u = data.getUser(b.userId) ?? placeholderUser(b.userId);
         const prompt = data.getPromptForRound(b.roundId)?.text;
         const caption = data.getSubmission(b.submissionId)?.caption;
         return (

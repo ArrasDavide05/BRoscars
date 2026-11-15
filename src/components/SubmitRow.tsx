@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { useData, type Submission } from "@/lib/data";
+import { useData, type Event, type Submission } from "@/lib/data";
 import { Avatar } from "./Avatar";
 import { VideoTile } from "./VideoTile";
 import { VideoModal } from "./VideoModal";
@@ -60,8 +60,15 @@ function RetakeControl({ onRetake }: { onRetake: () => void }) {
  */
 export function SubmitRow({ roundId, index }: { roundId: string; index: number }) {
   const data = useData();
-  const round = data.getRound(roundId)!;
-  const event = data.getEvent(round.eventId)!;
+  const round = data.getRound(roundId);
+  const event = round ? data.getEvent(round.eventId) : undefined;
+  if (!round || !event) return null;
+  return <SubmitRowBody roundId={roundId} index={index} event={event} />;
+}
+
+/** The row itself, once its round and event are known to exist. */
+function SubmitRowBody({ roundId, index, event }: { roundId: string; index: number; event: Event }) {
+  const data = useData();
   const theme = data.getThemeForRound(roundId);
   const prompt = data.getPromptForRound(roundId);
   const members = data.getMembers(event.groupId);
