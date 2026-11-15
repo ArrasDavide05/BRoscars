@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createSeedDatabase } from "@/lib/data/seed";
+import { isReactionEmoji } from "@/lib/domain/reactions";
 
 // Every foreign key in the seed resolves, so a future seed edit can't leave a
 // dangling id that only shows up as a blank tile on some screen.
@@ -112,6 +113,25 @@ describe("seed integrity", () => {
       expect(membersOfEvent(p.eventId)).toContain(p.userId);
       expect(membersOfEvent(p.eventId)).toContain(p.pickedUserId);
       const key = `${p.eventId}:${p.userId}`;
+      expect(seen.has(key), key).toBe(false);
+      seen.add(key);
+    }
+  });
+
+  it("reactions are allowed emojis on complete nights' winning clips, by other members, one each", () => {
+    expect(db.reactions.length).toBeGreaterThanOrEqual(3);
+    expect(db.reactions.length).toBeLessThanOrEqual(5);
+    const seen = new Set<string>();
+    for (const r of db.reactions) {
+      const sub = submissionById.get(r.submissionId);
+      expect(sub, r.submissionId).toBeDefined();
+      const round = roundById.get(sub!.roundId)!;
+      expect(eventById.get(round.eventId)?.status, r.submissionId).toBe("complete");
+      expect(round.winnerUserIds, r.submissionId).toContain(sub!.userId);
+      expect(membersOfEvent(round.eventId)).toContain(r.userId);
+      expect(r.userId, r.submissionId).not.toBe(sub!.userId);
+      expect(isReactionEmoji(r.emoji), r.emoji).toBe(true);
+      const key = `${r.submissionId}:${r.userId}`;
       expect(seen.has(key), key).toBe(false);
       seen.add(key);
     }

@@ -262,7 +262,17 @@ export function createSeedDatabase(now: number): Database {
     { eventId: preId, userId: "u_bella", pickedUserId: "u_chris" },
   ];
 
-  return { users, themes, prompts, groups, events, rounds, submissions, ratings, nudges: [], speeches, predictions };
+  // A few reactions on the past night's first two winning clips, from the first two
+  // members who didn't post them (so the default viewer, Alex, usually has a pick).
+  const reactionPlan = [["😂", "🔥"], ["🔥", "🔥"]];
+  const reactions = pastRounds.slice(0, reactionPlan.length).flatMap((round, ri) => {
+    const uploader = round.winnerUserIds[0];
+    const submissionId = `s_${round.id}_${uploader}`;
+    const reactors = memberIds.filter((id) => id !== uploader);
+    return reactionPlan[ri].map((emoji, i) => ({ submissionId, userId: reactors[i], emoji }));
+  });
+
+  return { users, themes, prompts, groups, events, rounds, submissions, ratings, nudges: [], speeches, predictions, reactions };
 }
 
 function hash(s: string): number {

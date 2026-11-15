@@ -110,6 +110,13 @@ export interface Prediction {
   pickedUserId: string;
 }
 
+/** A member's emoji on a complete night's clip. One per (clip, member); a re-tap replaces or clears it. */
+export interface Reaction {
+  submissionId: string;
+  userId: string;
+  emoji: string;
+}
+
 export interface Database {
   users: User[];
   themes: Theme[];
@@ -122,6 +129,7 @@ export interface Database {
   nudges: Nudge[];
   speeches: Speech[];
   predictions: Prediction[];
+  reactions: Reaction[];
 }
 
 export type LivePhase =

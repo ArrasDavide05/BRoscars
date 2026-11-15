@@ -603,6 +603,36 @@ h3 {
   color: var(--faint);
 }
 
+/* ---------- emoji reactions (results winners) ---------- */
+.reaction-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.reaction-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+button.reaction-chip {
+  cursor: pointer;
+}
+button.reaction-chip:hover {
+  border-color: rgba(228, 176, 74, 0.5);
+}
+.reaction-chip[aria-pressed="true"] {
+  color: var(--gold);
+  border-color: var(--gold);
+  background: rgba(228, 176, 74, 0.12);
+}
+
 /* ---------- accordion row (upcoming rounds) ---------- */
 .acc-head {
   display: flex;
