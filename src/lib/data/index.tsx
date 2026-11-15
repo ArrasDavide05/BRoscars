@@ -31,6 +31,7 @@ import { computeRivalries, type RivalryResult, type RivalryRow } from "@/lib/dom
 import { computeNextUp, type NextUpItem } from "@/lib/domain/next-up";
 import { findByInviteCode } from "@/lib/domain/invite-code";
 import { pickOf, whoCalledIt } from "@/lib/domain/predictions";
+import { reactionCounts, type ReactionCount } from "@/lib/domain/reactions";
 import { completedEventInputs } from "./event-inputs";
 import { completedRivalryInputs } from "./rivalry-inputs";
 import { nextUpInputs } from "./next-up-inputs";
@@ -62,8 +63,9 @@ import type {
   User,
 } from "./types";
 
-export type { Event, Group, Prompt, Round, Speech, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress, HallOfFameRow, RaceRow, RivalryResult, RivalryRow, NextUpItem, UsedPrompt, ActiveNudge };
+export type { Event, Group, Prompt, Round, Speech, Submission, Theme, User, LiveState, RatingValue, Superlative, MemberSubmissionProgress, HallOfFameRow, RaceRow, RivalryResult, RivalryRow, NextUpItem, UsedPrompt, ActiveNudge, ReactionCount };
 export { ROUND_SECONDS };
+export { REACTION_EMOJIS } from "@/lib/domain/reactions";
 export { UNKNOWN_MEMBER_NAME, placeholderUser } from "./placeholder-user";
 
 export type JoinGroupResult =
@@ -138,6 +140,10 @@ export interface DataApi {
    * upcoming (picks stay private) or when nobody picked at all.
    */
   getWhoCalledIt: (eventId: string) => string[] | null;
+  /** Emoji counts on a clip, one entry per allowed emoji in fixed order (zeros included). */
+  getReactions: (submissionId: string) => ReactionCount[];
+  /** The current viewer's own emoji on a clip, or undefined. */
+  getMyReaction: (submissionId: string) => string | undefined;
 
   // live
   live: LiveState;
@@ -166,6 +172,8 @@ export interface DataApi {
   saveSpeech: (eventId: string, userId: string, text: string) => Promise<void>;
   /** Group member, upcoming night, pick a group member (self allowed); otherwise a no-op. A re-pick replaces. */
   predictBroscar: (eventId: string, userId: string, pickedUserId: string) => Promise<void>;
+  /** Member, complete night, someone else's clip, allowed emoji; otherwise a no-op. Same emoji again clears. */
+  reactToSubmission: (actorId: string, submissionId: string, emoji: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataApi | null>(null);
@@ -286,6 +294,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         if (!ev || ev.status === "upcoming" || picks.length === 0) return null;
         return whoCalledIt(picks, broscarUserIds(db, eventId));
       },
+      getReactions: (submissionId) => reactionCounts(db.reactions, submissionId),
+      getMyReaction: (submissionId) =>
+        db.reactions.find((r) => r.submissionId === submissionId && r.userId === currentUserId)?.emoji,
 
       live,
       getLiveEvent: () => db.events.find((e) => e.id === live.eventId),
@@ -326,6 +337,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       markRoundRevealed: actions.markRoundRevealed,
       saveSpeech: actions.saveSpeech,
       predictBroscar: actions.predictBroscar,
+      reactToSubmission: actions.reactToSubmission,
     };
   }, [db, live, currentUserId]);
 

@@ -16,6 +16,7 @@ import { generateInviteCode, inviteCodesMatch, validateGroupName } from "@/lib/d
 import { submissionProgress } from "@/lib/domain/submission-progress";
 import { nudgeIsActive } from "@/lib/domain/nudge";
 import { validateSpeech } from "@/lib/domain/speech";
+import { isReactionEmoji, toggleReaction } from "@/lib/domain/reactions";
 import { createSeedDatabase } from "./seed";
 import type {
   Database,
@@ -282,6 +283,17 @@ export const actions = {
       ? state.db.predictions.map((p) => (p === existing ? { ...p, pickedUserId } : p))
       : [...state.db.predictions, { eventId, userId, pickedUserId }];
     commit({ ...state, db: { ...state.db, predictions } });
+  },
+
+  /** A member's emoji on someone else's clip from a complete night. Same emoji again clears; another replaces. */
+  async reactToSubmission(actorId: string, submissionId: string, emoji: string) {
+    const sub = findSubmission(state.db, submissionId);
+    if (!sub || sub.userId === actorId || !isReactionEmoji(emoji)) return;
+    const round = state.db.rounds.find((r) => r.id === sub.roundId);
+    const event = findEvent(state.db, round?.eventId ?? null);
+    if (event?.status !== "complete" || !isGroupMember(state.db, event.groupId, actorId)) return;
+    const reactions = toggleReaction(state.db.reactions, submissionId, actorId, emoji);
+    commit({ ...state, db: { ...state.db, reactions } });
   },
 
   async createEvent(groupId: string, hostId: string, title: string, promptIds: string[], deadline: number) {

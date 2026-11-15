@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useData } from "@/lib/data";
+import { placeholderUser, useData } from "@/lib/data";
 import { Avatar } from "@/components/Avatar";
 import { SubmitRow } from "@/components/SubmitRow";
 import { RoundStandings } from "@/components/RoundStandings";
@@ -12,6 +12,7 @@ import { CopyResultsButton } from "@/components/CopyResultsButton";
 import { WinnersReel } from "@/components/WinnersReel";
 import { SuperlativesPanel } from "@/components/SuperlativesPanel";
 import { PersonalBests } from "@/components/PersonalBests";
+import { ClipReactions } from "@/components/ClipReactions";
 import { SubmissionProgress } from "@/components/SubmissionProgress";
 import { DeadlineLabel } from "@/components/DeadlineLabel";
 import { missingCount } from "@/lib/domain/submission-progress";
@@ -169,6 +170,17 @@ export default function EventPage({ params }: { params: { eventId: string } }) {
                     <strong>{prompt?.text}</strong>
                   </div>
                   <RoundStandings roundId={r.id} limit={data.getSubmissions(r.id).length} />
+                  {data.getRoundWinnerUserIds(r.id).map((uid) => {
+                    const sub = data.getSubmissionByUser(r.id, uid);
+                    if (!sub) return null;
+                    const winner = data.getUser(uid) ?? placeholderUser(uid);
+                    return (
+                      <div key={sub.id} className="row wrap" style={{ gap: 10 }}>
+                        <span className="faint" style={{ fontSize: 12 }}>🏆 {winner.name}&apos;s clip</span>
+                        <ClipReactions submissionId={sub.id} />
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
